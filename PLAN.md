@@ -1,126 +1,97 @@
-# Plan: Indian Trivia (Chronological Sorter Game)
+# Plan: Wikimedia Wikidata Integration (Dynamic Cards)
 
-Indian Trivia is a chronological order sorting game focused on Indian history, sports, cinema, science, and culture, inspired by `wikitrivia`. Players are presented with cards representing historical events and must place them on a timeline in the correct chronological order.
+This plan outlines the architecture, queries, and steps to integrate the Wikidata SPARQL API into the **Bharat Chrono** sorting game. The application will dynamically query Wikidata for Indian-related events, sanitize the dates, select 10 random events, and feed them to the game loop.
 
 ---
 
-## 📅 Roadmap Overview
+## 🗺️ Integration Roadmap
 
 ```mermaid
 graph TD
-    A[Phase 1: Curated Dataset] --> B[Phase 2: Game Engine & State]
-    B --> C[Phase 3: Drag & Drop Mechanics]
-    C --> D[Phase 4: Component Construction]
-    D --> E[Phase 5: Animations & Polishing]
-    E --> F[Phase 6: Verification & Build]
+    A[Bun API Proxy Route] --> B[Wikidata SPARQL Queries]
+    B --> C[Card Parser & Sanitizer]
+    C --> D[Fallback & Caching Engine]
+    D --> E[Client Loading State]
+    E --> F[Hybrid Play Engine]
 ```
 
-### 📋 Conductor Implementation Checklist
-- [x] **Phase 1: Curated Dataset** (`src/data/trivia.ts`)
-- [x] **Phase 2: Game Engine & State** (`src/hooks/useGameState.ts`)
-- [x] **Phase 3: Drag & Drop Mechanics** (custom Pointer/Drag APIs)
-- [x] **Phase 4: Component Construction** (`GameBoard`, `TriviaCard`, etc.)
-- [x] **Phase 5: Animations & Polishing** (flips, shakes, glows)
-- [x] **Phase 6: Verification & Build** (Bun compilation tests)
+### 📋 Integration Checklist
+- [x] **Bun API Proxy Route** (`src/index.ts`)
+- [x] **Wikidata SPARQL Queries** (Category-specific Indian events)
+- [x] **Card Parser & Date Sanitizer** (Extracting CE/BCE years)
+- [x] **Fallback & Caching Engine** (In-memory cache + offline static data fallback)
+- [x] **Client Loading State** (Neubrutalist loading spinner skeleton)
+- [x] **Hybrid Play Engine** (Seamless loading flow)
 
 ---
 
-## 🛠️ Architecture & Tech Stack
+## 🔌 1. Bun API Proxy (`src/index.ts`)
+To bypass browser CORS restrictions and prevent hitting Wikidata rate limits, the Bun server will expose a proxy endpoint: `/api/wikidata?category=[sports|history|cinema|science|general]`.
 
-- **Runtime & Bundler:** [Bun](https://bun.sh/) (configured with Hot Module Replacement and `bun-plugin-tailwind`).
-- **Frontend Library:** React 19 (Hooks, Context, State).
-- **Styling:** CSS Modules / Vanilla Tailwind CSS (modern color scheme, glassmorphism, responsive flex/grid layouts).
-- **Icons:** `lucide-react` for playful UI indicators.
-- **Animations:** CSS Keyframes & transitions, Tailwind utilities for tilt-on-hover, card flip, shake, and success popups.
+### Features of the Proxy:
+1. **Wikidata Request Headers:** Requests to `https://query.wikidata.org/sparql` require a custom `User-Agent` (e.g., `BharatChrono/1.0 (contact@example.com)`) and `Accept: application/sparql-results+json`.
+2. **In-Memory Cache:** Cache results for 10 minutes per category. If a user plays consecutive matches in the same category, we serve cached cards immediately.
+3. **Randomizer:** Query up to 100 events, parse them, filter out events with missing titles/descriptions, and select 10 random items to send to the client.
 
 ---
 
-## 🗃️ Phase 1: Trivia Dataset Schema (`src/data/trivia.json`)
+## 🗃️ 2. Wikidata SPARQL Queries
 
-To ensure a robust, offline-first v1 experience, we will create a curated dataset of Indian events. We'll group them into five distinct categories:
-- **History & Politics** (`history`)
-- **Sports** (`sports`)
-- **Cinema & Art** (`cinema`)
-- **Science & Technology** (`science`)
-- **General Trivia** (`general`)
+We will define category-specific SPARQL queries to query entities related to India with points in time.
 
-### Event Card Schema
-```typescript
-interface TriviaCard {
-  id: string;          // Unique identifier
-  title: string;       // Name of the event (e.g., "First Battle of Panipat")
-  description: string; // Brief hint / context (e.g., "Babur defeated Ibrahim Lodi, marking the start of the Mughal Empire.")
-  year: number;        // Year of occurrence (e.g., 1526)
-  category: string;    // 'history' | 'sports' | 'cinema' | 'science' | 'general'
-  image?: string;      // Optional local or Wikimedia image URL/icon placeholder
-}
+### A. Sports & Games (`sports`)
+Queries events that are instances of "sporting event" (`wd:Q1656509`), "championship" (`wd:Q3244832`), or "match" (`wd:Q208846`) located in or associated with India (`wd:Q668`).
+```sparql
+SELECT DISTINCT ?item ?itemLabel ?itemDescription ?date WHERE {
+  ?item wdt:P31/wdt:P279* ?type.
+  VALUES ?type { wd:Q1656509 wd:Q3244832 wd:Q208846 }
+  { ?item wdt:P17 wd:Q668. } UNION { ?item wdt:P276/wdt:P17* wd:Q668. }
+  BIND(COALESCE(?p585, ?p580) AS ?date)
+  OPTIONAL { ?item wdt:P585 ?p585. }
+  OPTIONAL { ?item wdt:P580 ?p580. }
+  FILTER(BOUND(?date))
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+  FILTER(EXISTS {
+    ?item rdfs:label ?label.
+    FILTER(LANG(?label) = "en")
+  })
+} LIMIT 100
 ```
 
----
+### B. History & Politics (`history`)
+Queries instances of "historical event" (`wd:Q13414953`), "battle" (`wd:Q178561`), "treaty" (`wd:Q131569`), or "election" (`wd:Q40262`) in India.
 
-## 🧠 Phase 2: Game State & Rules Engine
+### C. Cinema & Arts (`cinema`)
+Queries instances of "film" (`wd:Q11424`) with publication date (`wdt:P577`) and country of origin India (`wd:Q668`).
 
-The core game logic will run on a state machine managing:
-1. **Lives (`lives`):** Max 3 hearts. Losing a life triggers a card shake and slides it automatically to its correct chronological place.
-2. **Score (`score`):** Tracks the number of successfully placed cards.
-3. **High Score (`highScore`):** Persisted in `localStorage` per category.
-4. **Timeline (`timeline`):** An ordered list of successfully placed cards (starts with 1 initial card).
-5. **Deck (`deck`):** Shuffled stack of unused cards for the active category.
-6. **Current Card (`currentCard`):** The next card to be placed.
+### D. Science & Technology (`science`)
+Queries space launches, missions, and scientific discoveries associated with India.
 
-### Chronological Verification Rule
-When the player drops a card at index `k` in a timeline of length `N`:
-- The card is placed correctly if:
-  `year(timeline[k - 1]) <= year(currentCard) <= year(timeline[k])`
-- (Boundary cases where `k = 0` or `k = N` check only the successor or predecessor respectively.)
+### E. General & Culture (`general`)
+Queries general events, infrastructure projects, and awards associated with India.
 
 ---
 
-## 🏓 Phase 3: Drag & Drop Mechanics
+## 🛠️ 3. Card Parser & Date Sanitizer
 
-To keep the app extremely responsive on both desktop and mobile, we will implement a custom, lightweight Drag & Drop interface using:
-- **HTML5 Drag and Drop API** (with touch polyfill/fallback) or **PointerEvents** for full mobile responsiveness.
-- **Drop Zones:** Visual markers placed between cards on the timeline:
-  - Before the first card.
-  - Between every pair of adjacent cards.
-  - After the last card.
-- **Fill Hover State:** When a card is dragged over a Drop Zone, the drop zone expands in width and glows with a playful animation ("fill on drag & drop").
+Dates returned from Wikidata are in ISO format (e.g. `"+1983-06-25T00:00:00Z"`). We must extract:
+- **Year:** Parse the year integer (positive for CE, negative for BCE).
+- **Label / Title:** Clean up standard Q-code labels.
+- **Description:** Provide fallback summaries if the Wikidata description is empty (e.g. "Historical Indian milestone.").
 
 ---
 
-## 🎨 Phase 4: UI Design & Component Layout
-
-Aesthetically, the app will feature a sleek dark mode with glassmorphism, using a palette inspired by Indian colors (deep indigo/saffron/green highlights, customized to feel modern and premium):
-
-### 1. `CategorySelect`
-- Beautiful landing screen with large cards for each category.
-- Custom gradient background, high-score badges, and hover scaling.
-
-### 2. `TimelineBoard`
-- Horizontally scrollable container that centers active cards.
-- Floating score and heart indicator panels.
-
-### 3. `TriviaCardComponent`
-- **Front Face:** Event title, description/clue, category icon.
-- **Back Face:** Shows the year (revealed after correct placement or game over).
-- **Animations:**
-  - **Flip on Hover:** Hovering over the card in the "current" slot tilts/flips it slightly to show its back info outline or a playful hint.
-  - **Shake on Error:** Red flash and side-to-side shake if dropped in the wrong position.
-  - **Scale up on Success:** A bouncy scaling effect with green glow when placed correctly.
+## 🛡️ 4. Hybrid Offline-Fallback Engine
+To ensure the game never breaks when a user has no internet access or Wikidata is offline:
+1. Try fetching from `/api/wikidata?category=...`.
+2. If it succeeds, load the 10 fetched cards.
+3. If it fails (due to timeout, server error, or rate limits), **log a warning and fall back to our local `TRIVIA_DATA` dataset** for that category.
+4. The transition is completely seamless to the player, maintaining high reliability.
 
 ---
 
-## 🎬 Phase 5: Animations & Micro-Interactions
+## 🎨 5. Neubrutalist Loading State
 
-To create the requested playful UI:
-- **Card Tilt & Float:** Hovering over cards uses CSS 3D transforms for a modern tilt effect.
-- **Dropzone Expander:** Custom transitions that expand dropping margins smoothly when dragging.
-- **Lives Shake:** The hearts container shakes (`animate-shake`) and drops a heart with a fade-out animation when a mistake is made.
-- **Celebration Particle Effect:** A lightweight custom confetti effect bursts from the dropped position upon scoring a point.
-
----
-
-## 🚀 Phase 6: Build & Test Strategy
-1. **Local Dev:** Run the server using `bun run dev` and ensure Hot Module Replacement is responsive.
-2. **Data Verification:** Write a validation check in `build.ts` to ensure all trivia items have valid fields and no duplicates.
-3. **Build:** Bundle using `bun run build` to generate optimized production artifacts.
+While fetching data from the API:
+- Render a blocky Neubrutalist skeleton screen.
+- Pulsating placeholder cards with dotted lines and a spinner reading `"FETCHING FROM WIKIMEDIA..."` to keep the UI engaging.
