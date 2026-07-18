@@ -34,6 +34,10 @@
   box-shadow: 6px 6px 0px 0px #000000;
 }
 
+.shadow-brutal-back {
+  box-shadow: -6px 6px 0px 0px #000000;
+}
+
 .shadow-brutal-lg {
   box-shadow: 10px 10px 0px 0px #000000;
 }

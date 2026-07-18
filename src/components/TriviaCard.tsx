@@ -12,6 +12,7 @@ interface TriviaCardProps {
   onDragEnd?: () => void;
   onClick?: () => void;
   skipInitialFlip?: boolean;
+  isIncorrect?: boolean;
 }
 
 const CATEGORY_THEMES = {
@@ -51,7 +52,8 @@ export function TriviaCard({
   onDragStart,
   onDragEnd,
   onClick,
-  skipInitialFlip = false
+  skipInitialFlip = false,
+  isIncorrect = false
 }: TriviaCardProps) {
   const theme = CATEGORY_THEMES[card.category];
   
@@ -59,6 +61,8 @@ export function TriviaCard({
   const [isFlipped, setIsFlipped] = useState(
     skipInitialFlip ? (revealed ? true : false) : (revealed ? false : true)
   );
+  const [hoverFlipped, setHoverFlipped] = useState(false);
+  const canHoverFlip = revealed && !isCurrent;
 
   useEffect(() => {
     if (skipInitialFlip) {
@@ -86,6 +90,8 @@ export function TriviaCard({
       onDragStart={isCurrent ? onDragStart : undefined}
       onDragEnd={isCurrent ? onDragEnd : undefined}
       onClick={onClick}
+      onMouseEnter={canHoverFlip ? () => setHoverFlipped(true) : undefined}
+      onMouseLeave={canHoverFlip ? () => setHoverFlipped(false) : undefined}
       className={`
         relative w-44 h-60 perspective-1000 select-none rounded-none
         ${isCurrent ? "cursor-grab active:cursor-grabbing hover:scale-[1.02]" : ""}
@@ -98,21 +104,17 @@ export function TriviaCard({
       <div 
         className="relative w-full h-full preserve-3d transition-transform duration-500 ease-out"
         style={{
-          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+          transform: canHoverFlip && hoverFlipped
+            ? "rotateY(0deg)"
+            : (isFlipped ? "rotateY(180deg)" : "rotateY(0deg)"),
         }}
       >
         {/* ================= FACE A: CLUE FACE (Front) ================= */}
         <div 
           className="absolute inset-0 backface-hidden border-[3px] border-black p-4 flex flex-col justify-between rounded-none bg-[#FFE885] shadow-brutal"
         >
-          {/* Header */}
-          <div className="flex items-center justify-between w-full">
-            <div className={`flex items-center gap-1 px-2 py-0.5 border-2 border-black text-[9px] font-black uppercase ${theme.iconBg}`}>
-              {theme.icon}
-              <span>{card.category}</span>
-            </div>
-            <HelpCircle className="w-4 h-4 text-black stroke-[2.5]" />
-          </div>
+          {/* Header Spacer */}
+          <div className="w-full h-4" />
 
           {/* Clue Text */}
           <div className="flex-1 flex flex-col justify-center py-2 text-center">
@@ -138,21 +140,15 @@ export function TriviaCard({
         >
           {revealed ? (
             /* Revealed Year Face */
-            <div className={`w-full h-full border-[3px] border-black p-4 flex flex-col justify-between rounded-none ${theme.bg} shadow-brutal`}>
-              {/* Header */}
-              <div className="flex items-center justify-between w-full">
-                <div className={`flex items-center gap-1 px-2 py-0.5 border-2 border-black text-[9px] font-black uppercase ${theme.iconBg}`}>
-                  {theme.icon}
-                  <span>{card.category}</span>
-                </div>
-                <span className="text-[10px] text-slate-700 font-mono">
-                  #{card.id.split("_")[1]}
-                </span>
-              </div>
+            <div className={`w-full h-full border-[3px] border-black p-4 flex flex-col justify-between rounded-none ${theme.bg} shadow-brutal-back`}>
+              {/* Header Spacer */}
+              <div className="w-full h-4" />
 
               {/* Year Value */}
               <div className="flex-1 flex flex-col justify-center items-center text-center py-2">
-                <div className="bg-[#FFF97A] border-[2px] border-black px-3 py-1 text-sm font-black text-black uppercase tracking-wide flex items-center gap-1.5 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                <div className={`border-[2px] border-black px-3 py-1 text-sm font-black text-black uppercase tracking-wide flex items-center gap-1.5 shadow-[2px_2px_0px_rgba(0,0,0,1)] ${
+                  isIncorrect ? "bg-[#FF6B6B]" : "bg-[#FFF97A]"
+                }`}>
                   <Calendar className="w-4 h-4 text-black stroke-[2.5]" />
                   {formatYear(card.year)}
                 </div>

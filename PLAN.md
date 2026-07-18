@@ -1,84 +1,77 @@
-# Plan: Unified Physical Deck & Staged Deals
+# Plan: Final Polish & UX Improvements
 
-This plan implements a physical card deck layout. The active card (the card to sort) rests directly on top of the draw deck pile. The timeline baseline card flies from this deck to the timeline. Subsequent cards flip face-up in place on top of the deck, ready to be dragged directly off the pile.
+This plan details the implementation of 7 final polish and UX tasks, resolving timeline scrolling, card aesthetics, drag-and-drop cursor alignments, flickering dropzones, and timing fixes for game-over sequences.
 
 ---
 
-## 📅 Simplified Game Loop Sequence
+## 🗺️ Implementation Roadmap
 
 ```mermaid
-sequenceDiagram
-    participant User as Category Selected
-    participant Deck as Draw Deck Pile (Bottom)
-    participant Timeline as Timeline (Top)
-    
-    User->>Deck: 1. Slide Up Deck Pile (all face-down)
-    Deck->>Timeline: 2. Baseline Card flies from Deck to Timeline
-    Timeline->>Timeline: 3. Baseline Card flips to reveal Year
-    Deck->>Deck: 4. Top card of Deck flips face-up (reveals Clue)
-    User->>Timeline: 5. Drag top card off the deck and drop on Timeline
-    Timeline->>Timeline: 6. Card flips to reveal Year
-    Deck->>Deck: 7. New top card of Deck flips face-up (reveals next Clue)
+graph TD
+    A[Add Scroll boundary overlays] --> B[Remove card tags]
+    B --> C[Fix horizontal box-shadow flip]
+    C --> D[Add Hover-to-Clue flip logic]
+    D --> E[Center HTML5 Drag-start coordinates]
+    E --> F[Add pointer-events-none & DragOver stabilizers]
+    F --> G[Refactor gameover timers in useGameState]
 ```
 
-### 📋 Physical Deck Checklist
-- [x] **Remove Separate Sorting Drawer:** (Next event card box deleted, layout simplified)
-- [x] **Implement Draw Pile Stack:** (Underlying layered cards rendered at the bottom)
-- [x] **Establish top card slot:** (The current active card rests directly on top of the pile)
-- [x] **Coordinate Staggered Deal:** (Baseline card flies from `#draw-pile-deck` to timeline base placeholder and flips)
-- [x] **Trigger top deck flip-up:** (Active card flips face-up right on top of the deck)
-- [x] **Setup draw-reset loop:** (When placed, the top card resets to face-down, then flips face-up to show the next clue)
-- [x] **Clean compilation builds:** (Verified builds successfully compile)
+### 📋 Final Polish Checklist
+- [x] **1. Timeline drag-hover scroll zones:** (Continuous interval scrolling triggered on boundary hover zones)
+- [x] **2. Card category tag removal:** (Clean tagless fronts and backs for all card category icons and names)
+- [x] **3. Rotated back-face box shadows:** (Mirrored horizontal shadows using offset utility classes)
+- [x] **4. Hover description flip:** (Placed timeline cards reverse-flip on mouse hover to show clues)
+- [x] **5. Lock drag cursor center:** (HTML5 setDragImage sets coordinates centered on cursor start)
+- [x] **6. Stabilized dropzone flicker:** (onDragOver triggers indices, child elements have pointer-events-none)
+- [x] **7. Post-animation game over hook:** (Timers complete correct/incorrect visual feedback before endGame transitions status)
 
 ---
 
-## 🛠️ 1. Unified Deck Pile Layout (`src/components/GameBoard.tsx`)
+## 🔍 Detailed Task Breakdown
 
-We will remove the separate "Next Event Card" drawer. Instead, the deck pile at the bottom will house both the face-down stack and the active draggable card on top:
+### 1. Auto-scroll Timeline on Boundary Hover
+We will render two invisible scroll trigger zones on the left and right edges of the viewport when `isDragging` is true. Hovering a card over these zones will scroll the timeline container via a continuous interval:
+- **Left Zone:** `<div class="fixed left-0 top-[200px] w-24 h-80 z-40" onDragOver={scrollLeft} />`
+- **Right Zone:** `<div class="fixed right-0 top-[200px] w-24 h-80 z-40" onDragOver={scrollRight} />`
 
+### 2. Remove Tag Headers from Card Layout
+In [TriviaCard.tsx](file:///home/jishnu/indian-trivia/src/components/TriviaCard.tsx), we will remove the top header blocks from both Face A (Clue) and Face B (Year):
+- Delete the element containing `theme.icon`, `card.category`, and `HelpCircle` on Face A.
+- Delete the element containing `theme.icon`, `card.category`, and `#id` on Face B.
+- This leaves clean, tagless trivia cards.
+
+### 3. Box-shadow Offset Compensation (Shadow Bug)
+Because timeline cards are rotated 3D using `rotateY(180deg)`, the browser mirrors their drop-shadows to the left. We will add a compensated shadow utility in `src/index.css`:
+```css
+.shadow-brutal-back {
+  box-shadow: -6px 6px 0px 0px #000000;
+}
+```
+We will apply `shadow-brutal-back` on Face B. When rotated, the negative offset will be mirrored back to the right, aligning perfectly with Face A's shadow.
+
+### 4. Hover-to-Clue Flip on Timeline
+Timeline cards will flip over to reveal their description on hover:
+- Add a hover state hook inside `TriviaCard.tsx`: `const [hoverFlipped, setHoverFlipped] = useState(false)`.
+- If `revealed && !isCurrent` (placed timeline card), attach `onMouseEnter={() => setHoverFlipped(true)}` and `onMouseLeave={() => setHoverFlipped(false)}`.
+- Render rotation style: `transform: hoverFlipped ? "rotateY(0deg)" : (isFlipped ? "rotateY(180deg)" : "rotateY(0deg)")`.
+
+### 5. Center HTML5 Drag-start Cursor
+In `GameBoard.tsx`'s `handleDragStart`, we will use `setDragImage` to lock the cursor to the exact center of the card:
 ```typescript
-<div className="relative w-44 h-60 select-none">
-  {/* Layered stack of cards underneath (Draw Pile) */}
-  <div className="absolute inset-0 translate-y-3 translate-x-2 rotate-[4deg] bg-card-back border-[3px] border-black shadow-brutal-sm opacity-60"></div>
-  <div className="absolute inset-0 translate-y-1.5 translate-x-[-1px] rotate-[-2deg] bg-card-back border-[3px] border-black shadow-brutal-sm opacity-80"></div>
-  
-  {/* Top card slot (ID: draw-pile-deck) */}
-  <div id="draw-pile-deck" className="absolute inset-0 translate-y-0 translate-x-0 rotate-0">
-    {showActiveCard ? (
-      /* Draggable card sits on top of the deck, flipping face-up */
-      <TriviaCard
-        card={currentCard}
-        revealed={false}
-        isCurrent={!isAnimating}
-        isDragging={isDragging}
-        isSelected={isCardSelected}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onClick={handleCardClick}
-      />
-    ) : (
-      /* Temporary face-down card back shown during deals */
-      <div className="w-full h-full border-[3px] border-black bg-card-back shadow-brutal flex justify-center items-center p-4">
-        <div className="w-16 h-16 rounded-full border-[3px] border-black bg-[#FFF97A] flex items-center justify-center shadow-brutal-sm rotate-[-6deg]">
-          <span className="text-3xl font-black text-black">?</span>
-        </div>
-      </div>
-    )}
-  </div>
-</div>
+if (e.dataTransfer.setDragImage) {
+  const rect = e.currentTarget.getBoundingClientRect();
+  e.dataTransfer.setDragImage(e.currentTarget, rect.width / 2, rect.height / 2);
+}
 ```
 
----
+### 6. Flickering Dropzones Stabilizer
+To eliminate dropzone flickering when a card shifts layout:
+1. Move the `setHoveredDropzone` setting into the continuous `onDragOver` handler, which fires continuously.
+2. Add `pointer-events-none` to the dropzone's children (the `Plus` icon and "PLACE CARD" label) to prevent child hover crossings from triggering parent `dragLeave` events.
 
-## 🧠 2. Game Deal Timing Coordination
-
-1. **Initial Mount Sequence:**
-   - **T = 100ms:** Show Deck. (Pile appears at the bottom).
-   - **T = 800ms:** Deal Baseline Card. (First card flies from `#draw-pile-deck` to `#timeline-base-placeholder`).
-   - **T = 1550ms:** Base Card lands. (Mounts in timeline, turns year face-up, global deal overlay clears).
-   - **T = 1700ms:** Flip Active Card. (`showActiveCard` -> `true`. Top card of the deck flips face-up on the deck).
-
-2. **Subsequent Draw Sequence:**
-   - When a card is correctly sorted and a new card is drawn:
-     - `showActiveCard` is set to `false` (showing the face-down deck card).
-     - After `300ms` (once placement feedback settles), `showActiveCard` becomes `true` (flipping the new top card of the deck face-up).
+### 7. Post-Animation Game Over Hook & Incorrect Splicing
+We implemented a complete multi-stage incorrect placement flow:
+1. **Wrong Splicing first:** `placeCard` inserts the card at `droppedIndex` first.
+2. **Synchronous Lives check:** `placeCard` returns the decremented lives value synchronously, escaping the async React closure bug where `gameState.lives` was captured.
+3. **GSAP FLIP Glide:** After the 1.6s incorrect shake animation finishes, we run `animateCardGlide` which shifts the card index to `correctIndex` in state and glides it smoothly to its correct layout position using GSAP.
+4. **Style Year Red:** Added `isIncorrect` prop to style the year date badge with a neubrutalist red background (`#FF6B6B`) for all incorrectly placed cards.

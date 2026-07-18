@@ -23,6 +23,7 @@ export function useGameState() {
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [highScores, setHighScores] = useState<Record<string, number>>({});
+  const [incorrectCardIds, setIncorrectCardIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Load high scores from localStorage
@@ -147,9 +148,14 @@ export function useGameState() {
   }, []);
 
   // Handle card placement action
-  const placeCard = useCallback((droppedIndex: number): { success: boolean; correctIndex: number } => {
+  const placeCard = useCallback((droppedIndex: number): { 
+    success: boolean; 
+    correctIndex: number; 
+    remainingLives: number; 
+    noMoreCards: boolean;
+  } => {
     if (!currentCard || status !== "playing") {
-      return { success: false, correctIndex: -1 };
+      return { success: false, correctIndex: -1, remainingLives: lives, noMoreCards: false };
     }
 
     const isCorrect = checkPlacement(currentCard, droppedIndex, timeline);
@@ -171,32 +177,41 @@ export function useGameState() {
         setDeck(deck.slice(1));
       } else {
         setCurrentCard(null);
-        setStatus("gameover");
       }
 
-      return { success: true, correctIndex: droppedIndex };
+      return { 
+        success: true, 
+        correctIndex: droppedIndex, 
+        remainingLives: lives,
+        noMoreCards: deck.length === 0
+      };
     } else {
       const newLives = lives - 1;
       setLives(newLives);
+      setIncorrectCardIds(prev => [...prev, currentCard.id]);
 
+      // Place it at the wrong (dropped) index first in timeline state
       const newTimeline = [...timeline];
-      newTimeline.splice(correctIndex, 0, currentCard);
+      newTimeline.splice(droppedIndex, 0, currentCard);
       setTimeline(newTimeline);
 
       if (newLives <= 0) {
         setCurrentCard(null);
-        setStatus("gameover");
       } else {
         if (deck.length > 0) {
           setCurrentCard(deck[0]);
           setDeck(deck.slice(1));
         } else {
           setCurrentCard(null);
-          setStatus("gameover");
         }
       }
 
-      return { success: false, correctIndex };
+      return { 
+        success: false, 
+        correctIndex, 
+        remainingLives: newLives,
+        noMoreCards: deck.length === 0 && newLives > 0
+      };
     }
   }, [currentCard, timeline, score, lives, deck, category, status, checkPlacement, findCorrectIndex, updateHighScore]);
 
@@ -207,6 +222,7 @@ export function useGameState() {
     setCurrentCard(null);
     setScore(0);
     setLives(3);
+    setIncorrectCardIds([]);
   }, []);
 
   const restartGame = useCallback(() => {
@@ -214,6 +230,21 @@ export function useGameState() {
       startGame(category);
     }
   }, [category, startGame]);
+
+  const endGame = useCallback(() => {
+    setStatus("gameover");
+  }, []);
+
+  const moveTimelineCard = useCallback((cardId: string, toIndex: number) => {
+    setTimeline(prev => {
+      const card = prev.find(c => c.id === cardId);
+      if (!card) return prev;
+      const filtered = prev.filter(c => c.id !== cardId);
+      const newTimeline = [...filtered];
+      newTimeline.splice(toIndex, 0, card);
+      return newTimeline;
+    });
+  }, []);
 
   return {
     status,
@@ -225,9 +256,12 @@ export function useGameState() {
     isLoading,
     highScores: highScores[category || ""] || 0,
     allHighScores: highScores,
+    incorrectCardIds,
     startGame,
     placeCard,
     resetGame,
-    restartGame
+    restartGame,
+    endGame,
+    moveTimelineCard
   };
 }

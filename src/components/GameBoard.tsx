@@ -230,12 +230,48 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
     }
   }, [timeline.length]);
 
-  // Handle Drag Start
+  // Continuous scroll boundary triggers (Task 1)
+  const scrollIntervalRef = useRef<number | null>(null);
+
+  const startScrolling = (direction: "left" | "right") => {
+    if (scrollIntervalRef.current) return;
+    scrollIntervalRef.current = window.setInterval(() => {
+      if (timelineContainerRef.current) {
+        timelineContainerRef.current.scrollBy({
+          left: direction === "left" ? -22 : 22,
+          behavior: "auto"
+        });
+      }
+    }, 20);
+  };
+
+  const stopScrolling = () => {
+    if (scrollIntervalRef.current) {
+      clearInterval(scrollIntervalRef.current);
+      scrollIntervalRef.current = null;
+    }
+  };
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollIntervalRef.current) {
+        clearInterval(scrollIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Handle Drag Start (Task 5)
   const handleDragStart = (e: React.DragEvent) => {
     setIsDragging(true);
     setIsCardSelected(false);
     e.dataTransfer.setData("text/plain", currentCard?.id || "");
     e.dataTransfer.effectAllowed = "move";
+
+    if (e.dataTransfer.setDragImage && e.currentTarget) {
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      e.dataTransfer.setDragImage(e.currentTarget, rect.width / 2, rect.height / 2);
+    }
   };
 
   const handleDragEnd = () => {
@@ -243,11 +279,14 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
     setHoveredDropzone(null);
   };
 
-  // Drag over dropzones
+  // Drag over dropzones (Task 6)
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     if (isAnimating) return;
     e.dataTransfer.dropEffect = "move";
+    if (hoveredDropzone !== index) {
+      setHoveredDropzone(index);
+    }
   };
 
   const handleDragEnter = (e: React.DragEvent, index: number) => {
@@ -273,6 +312,53 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
     executePlacement(index);
   };
 
+  // Animates card shifting from wrong dropped index to correct timeline index (FLIP animation)
+  const animateCardGlide = (cardId: string, toIndex: number) => {
+    const cardEl = document.getElementById(`timeline-item-${cardId}`);
+    if (!cardEl) {
+      // Fallback: move in state immediately
+      gameState.moveTimelineCard(cardId, toIndex);
+      return;
+    }
+
+    // 1. FIRST: Measure visual bounding box at wrong position
+    const firstRect = cardEl.getBoundingClientRect();
+
+    // 2. State shift: Move card to correct index in timeline
+    gameState.moveTimelineCard(cardId, toIndex);
+
+    // 3. In next layout pass, measure new position and animate offset delta back to 0,0
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const newCardEl = document.getElementById(`timeline-item-${cardId}`);
+        if (!newCardEl) return;
+
+        // LAST: Measure visual bounding box at correct position
+        const lastRect = newCardEl.getBoundingClientRect();
+
+        // INVERT: Calculate position difference
+        const dx = firstRect.left - lastRect.left;
+        const dy = firstRect.top - lastRect.top;
+
+        // PLAY: Animate using GSAP
+        gsap.killTweensOf(newCardEl);
+        gsap.fromTo(newCardEl,
+          {
+            x: dx,
+            y: dy
+          },
+          {
+            x: 0,
+            y: 0,
+            duration: 0.8,
+            ease: "power2.out",
+            clearProps: "transform"
+          }
+        );
+      });
+    });
+  };
+
   // Triggered when a placement action is executed (via drop or click)
   const executePlacement = (index: number) => {
     if (isAnimating || !currentCard) return;
@@ -281,7 +367,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
     setIsCardSelected(false);
 
     const activeCard = currentCard;
-    const { success } = placeCard(index);
+    const { success, correctIndex, remainingLives, noMoreCards } = placeCard(index);
 
     if (success) {
       setFeedbackCardId(activeCard.id);
@@ -291,6 +377,11 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
         setFeedbackCardId(null);
         setFeedbackType(null);
         setIsAnimating(false);
+
+        // Check if victory has occurred (no cards remaining in deck) (Task 7)
+        if (noMoreCards) {
+          gameState.endGame();
+        }
       }, 1000);
     } else {
       setFeedbackCardId(activeCard.id);
@@ -301,10 +392,23 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
         setShakeHearts(false);
       }, 600);
 
+      // Stage 2: shake finishes after 1.6s, then we glide to the correctIndex (Stage 3)
       setTimeout(() => {
         setFeedbackCardId(null);
         setFeedbackType(null);
-        setIsAnimating(false);
+
+        // Trigger the visual glide to the correct position
+        animateCardGlide(activeCard.id, correctIndex);
+
+        // Wait for the glide to finish (800ms) before ending the turn or checking game over
+        setTimeout(() => {
+          setIsAnimating(false);
+
+          // Check if lives has expired
+          if (remainingLives <= 0 || noMoreCards) {
+            gameState.endGame();
+          }
+        }, 800);
       }, 1600);
     }
   };
@@ -413,7 +517,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                   const isIncorrectFeedback = feedbackCardId === card.id && feedbackType === "incorrect";
 
                   return (
-                    <div key={`timeline-item-${card.id}`} className="flex items-center flex-shrink-0 snap-center">
+                    <div id={`timeline-item-${card.id}`} key={`timeline-item-${card.id}`} className="flex items-center flex-shrink-0 snap-center">
                       
                       {/* Dropzone */}
                       <div
@@ -435,7 +539,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                         `}
                       >
                         {(hoveredDropzone === idx || isCardSelected) && (
-                          <div className="flex flex-col items-center gap-2 text-black p-4 text-center">
+                          <div className="flex flex-col items-center gap-2 text-black p-4 text-center pointer-events-none">
                             <Plus className="w-8 h-8 stroke-[3]" />
                             <span className="text-[10px] font-black tracking-tighter uppercase">PLACE CARD</span>
                           </div>
@@ -450,7 +554,12 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                           ${isIncorrectFeedback ? "animate-shake-brutal border-[3px] border-red-500 bg-[#FFD1D1]" : ""}
                         `}
                       >
-                        <TriviaCard card={card} revealed={true} skipInitialFlip={idx === 0} />
+                        <TriviaCard 
+                          card={card} 
+                          revealed={true} 
+                          skipInitialFlip={idx === 0} 
+                          isIncorrect={gameState.incorrectCardIds.includes(card.id)}
+                        />
                       </div>
                     </div>
                   );
@@ -477,7 +586,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                     `}
                   >
                     {(hoveredDropzone === timeline.length || isCardSelected) && (
-                      <div className="flex flex-col items-center gap-2 text-black p-4 text-center">
+                      <div className="flex flex-col items-center gap-2 text-black p-4 text-center pointer-events-none">
                         <Plus className="w-8 h-8 stroke-[3]" />
                         <span className="text-[10px] font-black tracking-tighter uppercase">PLACE CARD</span>
                       </div>
@@ -567,6 +676,30 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
         >
           <TriviaCard card={dealAnimation.card} revealed={dealAnimation.type === "timeline"} />
         </div>
+      )}
+
+      {/* Invisible Scroll Zones for Drag Scrolling (Task 1) */}
+      {isDragging && (
+        <>
+          <div
+            className="fixed left-0 top-[150px] bottom-[150px] w-28 z-40 bg-transparent cursor-ew-resize"
+            onDragOver={(e) => {
+              e.preventDefault();
+              startScrolling("left");
+            }}
+            onDragLeave={stopScrolling}
+            onDrop={stopScrolling}
+          />
+          <div
+            className="fixed right-0 top-[150px] bottom-[150px] w-28 z-40 bg-transparent cursor-ew-resize"
+            onDragOver={(e) => {
+              e.preventDefault();
+              startScrolling("right");
+            }}
+            onDragLeave={stopScrolling}
+            onDrop={stopScrolling}
+          />
+        </>
       )}
     </div>
   );
