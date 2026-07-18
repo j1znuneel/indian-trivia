@@ -104,6 +104,64 @@
   scrollbar-width: none;
 }
 
+/* 3D Card Flip Utilities */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Card Deal Animations */
+@keyframes deal-to-timeline {
+  0% {
+    transform: translateY(350px) scale(0.3) rotate(15deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-deal-to-timeline {
+  animation: deal-to-timeline 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+}
+
+@keyframes deal-to-active {
+  0% {
+    transform: translateY(220px) scale(0.3) rotate(-10deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-deal-to-active {
+  animation: deal-to-active 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+}
+
+/* Card back pattern for Neubrutalist cards */
+.bg-card-back {
+  background-color: #ff6b6b;
+  background-image: 
+    radial-gradient(#000000 2px, transparent 2px), 
+    radial-gradient(#000000 2px, #ff6b6b 2px);
+  background-size: 16px 16px;
+  background-position: 0 0, 8px 8px;
+}
+
 @media (prefers-reduced-motion) {
   *,
   ::before,

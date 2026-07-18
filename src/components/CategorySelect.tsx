@@ -55,14 +55,13 @@ export function CategorySelect({ onSelect, highScores }: CategorySelectProps) {
       title: "General & Culture",
       description: "Literary Nobels, infrastructure marvels, and cultural milestones.",
       icon: <History className="w-8 h-8 text-black" />,
-      bgColor: "bg-[#FF7A9B]", /* Rose/Pink Pastel */
+      bgColor: "bg-[#FF7A9B]", 
       iconBg: "bg-[#FF4D75]"
     }
   ];
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-12 flex flex-col items-center select-none">
-      {/* Heavy Brutalist Header */}
       <div className="text-center mb-16 relative">
         <h1 className="text-6xl md:text-7xl font-black tracking-tight mb-4 uppercase border-brutal-thick bg-[#FDE047] text-black px-8 py-4 inline-block shadow-brutal rotate-[-1deg] transform">
           Indian Trivia
@@ -74,7 +73,6 @@ export function CategorySelect({ onSelect, highScores }: CategorySelectProps) {
         </div>
       </div>
 
-      {/* Grid of Neubrutalist Category Blocks */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full px-2">
         {categories.map(cat => {
           const score = highScores[cat.id] || 0;
