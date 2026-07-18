@@ -1,5 +1,6 @@
 import { serve } from "bun";
 import index from "./index.html";
+import { maskSpoilers } from "./lib/utils";
 
 interface TriviaCard {
   id: string;
@@ -140,8 +141,8 @@ const server = serve({
               const dateStr = b.date?.value;
               const year = parseWikidataDate(dateStr);
               const id = `wiki_${category}_${idx}_${Date.now()}`;
-              const title = b.itemLabel?.value || "";
-              const description = b.itemDescription?.value || "Historical milestone in India.";
+              const title = maskSpoilers(b.itemLabel?.value || "");
+              const description = maskSpoilers(b.itemDescription?.value || "Historical milestone in India.");
 
               // Filter out entities with invalid dates, empty titles, or Q-code titles
               if (year === null || !title || /^Q\d+$/.test(title)) {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { TRIVIA_DATA, TriviaCard } from "../data/trivia";
+import { maskSpoilers } from "../lib/utils";
 
 export type GameStatus = "landing" | "playing" | "gameover";
 export type Category = "history" | "sports" | "cinema" | "science" | "general";
@@ -59,7 +60,13 @@ export function useGameState() {
     const filtered = TRIVIA_DATA.filter(item => item.category === selectedCat);
     if (filtered.length < 2) return;
 
-    const shuffled = shuffle(filtered);
+    const sanitized = filtered.map(card => ({
+      ...card,
+      title: maskSpoilers(card.title),
+      description: maskSpoilers(card.description)
+    }));
+
+    const shuffled = shuffle(sanitized);
     const initialCard = shuffled[0];
     const remainingDeck = shuffled.slice(1);
     const firstPlayable = remainingDeck[0] || null;

@@ -1,97 +1,84 @@
-# Plan: Wikimedia Wikidata Integration (Dynamic Cards)
+# Plan: Unified Physical Deck & Staged Deals
 
-This plan outlines the architecture, queries, and steps to integrate the Wikidata SPARQL API into the **Bharat Chrono** sorting game. The application will dynamically query Wikidata for Indian-related events, sanitize the dates, select 10 random events, and feed them to the game loop.
+This plan implements a physical card deck layout. The active card (the card to sort) rests directly on top of the draw deck pile. The timeline baseline card flies from this deck to the timeline. Subsequent cards flip face-up in place on top of the deck, ready to be dragged directly off the pile.
 
 ---
 
-## 🗺️ Integration Roadmap
+## 📅 Simplified Game Loop Sequence
 
 ```mermaid
-graph TD
-    A[Bun API Proxy Route] --> B[Wikidata SPARQL Queries]
-    B --> C[Card Parser & Sanitizer]
-    C --> D[Fallback & Caching Engine]
-    D --> E[Client Loading State]
-    E --> F[Hybrid Play Engine]
+sequenceDiagram
+    participant User as Category Selected
+    participant Deck as Draw Deck Pile (Bottom)
+    participant Timeline as Timeline (Top)
+    
+    User->>Deck: 1. Slide Up Deck Pile (all face-down)
+    Deck->>Timeline: 2. Baseline Card flies from Deck to Timeline
+    Timeline->>Timeline: 3. Baseline Card flips to reveal Year
+    Deck->>Deck: 4. Top card of Deck flips face-up (reveals Clue)
+    User->>Timeline: 5. Drag top card off the deck and drop on Timeline
+    Timeline->>Timeline: 6. Card flips to reveal Year
+    Deck->>Deck: 7. New top card of Deck flips face-up (reveals next Clue)
 ```
 
-### 📋 Integration Checklist
-- [x] **Bun API Proxy Route** (`src/index.ts`)
-- [x] **Wikidata SPARQL Queries** (Category-specific Indian events)
-- [x] **Card Parser & Date Sanitizer** (Extracting CE/BCE years)
-- [x] **Fallback & Caching Engine** (In-memory cache + offline static data fallback)
-- [x] **Client Loading State** (Neubrutalist loading spinner skeleton)
-- [x] **Hybrid Play Engine** (Seamless loading flow)
+### 📋 Physical Deck Checklist
+- [x] **Remove Separate Sorting Drawer:** (Next event card box deleted, layout simplified)
+- [x] **Implement Draw Pile Stack:** (Underlying layered cards rendered at the bottom)
+- [x] **Establish top card slot:** (The current active card rests directly on top of the pile)
+- [x] **Coordinate Staggered Deal:** (Baseline card flies from `#draw-pile-deck` to timeline base placeholder and flips)
+- [x] **Trigger top deck flip-up:** (Active card flips face-up right on top of the deck)
+- [x] **Setup draw-reset loop:** (When placed, the top card resets to face-down, then flips face-up to show the next clue)
+- [x] **Clean compilation builds:** (Verified builds successfully compile)
 
 ---
 
-## 🔌 1. Bun API Proxy (`src/index.ts`)
-To bypass browser CORS restrictions and prevent hitting Wikidata rate limits, the Bun server will expose a proxy endpoint: `/api/wikidata?category=[sports|history|cinema|science|general]`.
+## 🛠️ 1. Unified Deck Pile Layout (`src/components/GameBoard.tsx`)
 
-### Features of the Proxy:
-1. **Wikidata Request Headers:** Requests to `https://query.wikidata.org/sparql` require a custom `User-Agent` (e.g., `BharatChrono/1.0 (contact@example.com)`) and `Accept: application/sparql-results+json`.
-2. **In-Memory Cache:** Cache results for 10 minutes per category. If a user plays consecutive matches in the same category, we serve cached cards immediately.
-3. **Randomizer:** Query up to 100 events, parse them, filter out events with missing titles/descriptions, and select 10 random items to send to the client.
+We will remove the separate "Next Event Card" drawer. Instead, the deck pile at the bottom will house both the face-down stack and the active draggable card on top:
 
----
-
-## 🗃️ 2. Wikidata SPARQL Queries
-
-We will define category-specific SPARQL queries to query entities related to India with points in time.
-
-### A. Sports & Games (`sports`)
-Queries events that are instances of "sporting event" (`wd:Q1656509`), "championship" (`wd:Q3244832`), or "match" (`wd:Q208846`) located in or associated with India (`wd:Q668`).
-```sparql
-SELECT DISTINCT ?item ?itemLabel ?itemDescription ?date WHERE {
-  ?item wdt:P31/wdt:P279* ?type.
-  VALUES ?type { wd:Q1656509 wd:Q3244832 wd:Q208846 }
-  { ?item wdt:P17 wd:Q668. } UNION { ?item wdt:P276/wdt:P17* wd:Q668. }
-  BIND(COALESCE(?p585, ?p580) AS ?date)
-  OPTIONAL { ?item wdt:P585 ?p585. }
-  OPTIONAL { ?item wdt:P580 ?p580. }
-  FILTER(BOUND(?date))
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
-  FILTER(EXISTS {
-    ?item rdfs:label ?label.
-    FILTER(LANG(?label) = "en")
-  })
-} LIMIT 100
+```typescript
+<div className="relative w-44 h-60 select-none">
+  {/* Layered stack of cards underneath (Draw Pile) */}
+  <div className="absolute inset-0 translate-y-3 translate-x-2 rotate-[4deg] bg-card-back border-[3px] border-black shadow-brutal-sm opacity-60"></div>
+  <div className="absolute inset-0 translate-y-1.5 translate-x-[-1px] rotate-[-2deg] bg-card-back border-[3px] border-black shadow-brutal-sm opacity-80"></div>
+  
+  {/* Top card slot (ID: draw-pile-deck) */}
+  <div id="draw-pile-deck" className="absolute inset-0 translate-y-0 translate-x-0 rotate-0">
+    {showActiveCard ? (
+      /* Draggable card sits on top of the deck, flipping face-up */
+      <TriviaCard
+        card={currentCard}
+        revealed={false}
+        isCurrent={!isAnimating}
+        isDragging={isDragging}
+        isSelected={isCardSelected}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onClick={handleCardClick}
+      />
+    ) : (
+      /* Temporary face-down card back shown during deals */
+      <div className="w-full h-full border-[3px] border-black bg-card-back shadow-brutal flex justify-center items-center p-4">
+        <div className="w-16 h-16 rounded-full border-[3px] border-black bg-[#FFF97A] flex items-center justify-center shadow-brutal-sm rotate-[-6deg]">
+          <span className="text-3xl font-black text-black">?</span>
+        </div>
+      </div>
+    )}
+  </div>
+</div>
 ```
 
-### B. History & Politics (`history`)
-Queries instances of "historical event" (`wd:Q13414953`), "battle" (`wd:Q178561`), "treaty" (`wd:Q131569`), or "election" (`wd:Q40262`) in India.
-
-### C. Cinema & Arts (`cinema`)
-Queries instances of "film" (`wd:Q11424`) with publication date (`wdt:P577`) and country of origin India (`wd:Q668`).
-
-### D. Science & Technology (`science`)
-Queries space launches, missions, and scientific discoveries associated with India.
-
-### E. General & Culture (`general`)
-Queries general events, infrastructure projects, and awards associated with India.
-
 ---
 
-## 🛠️ 3. Card Parser & Date Sanitizer
+## 🧠 2. Game Deal Timing Coordination
 
-Dates returned from Wikidata are in ISO format (e.g. `"+1983-06-25T00:00:00Z"`). We must extract:
-- **Year:** Parse the year integer (positive for CE, negative for BCE).
-- **Label / Title:** Clean up standard Q-code labels.
-- **Description:** Provide fallback summaries if the Wikidata description is empty (e.g. "Historical Indian milestone.").
+1. **Initial Mount Sequence:**
+   - **T = 100ms:** Show Deck. (Pile appears at the bottom).
+   - **T = 800ms:** Deal Baseline Card. (First card flies from `#draw-pile-deck` to `#timeline-base-placeholder`).
+   - **T = 1550ms:** Base Card lands. (Mounts in timeline, turns year face-up, global deal overlay clears).
+   - **T = 1700ms:** Flip Active Card. (`showActiveCard` -> `true`. Top card of the deck flips face-up on the deck).
 
----
-
-## 🛡️ 4. Hybrid Offline-Fallback Engine
-To ensure the game never breaks when a user has no internet access or Wikidata is offline:
-1. Try fetching from `/api/wikidata?category=...`.
-2. If it succeeds, load the 10 fetched cards.
-3. If it fails (due to timeout, server error, or rate limits), **log a warning and fall back to our local `TRIVIA_DATA` dataset** for that category.
-4. The transition is completely seamless to the player, maintaining high reliability.
-
----
-
-## 🎨 5. Neubrutalist Loading State
-
-While fetching data from the API:
-- Render a blocky Neubrutalist skeleton screen.
-- Pulsating placeholder cards with dotted lines and a spinner reading `"FETCHING FROM WIKIMEDIA..."` to keep the UI engaging.
+2. **Subsequent Draw Sequence:**
+   - When a card is correctly sorted and a new card is drawn:
+     - `showActiveCard` is set to `false` (showing the face-down deck card).
+     - After `300ms` (once placement feedback settles), `showActiveCard` becomes `true` (flipping the new top card of the deck face-up).

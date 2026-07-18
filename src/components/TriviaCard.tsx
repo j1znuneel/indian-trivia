@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { TriviaCard as CardType } from "../data/trivia";
 import { Landmark, Trophy, Film, Rocket, History, Calendar, HelpCircle } from "lucide-react";
 
@@ -10,31 +11,32 @@ interface TriviaCardProps {
   onDragStart?: (e: React.DragEvent) => void;
   onDragEnd?: () => void;
   onClick?: () => void;
+  skipInitialFlip?: boolean;
 }
 
 const CATEGORY_THEMES = {
   history: {
-    bg: "bg-[#FFEBD6]", /* Very soft orange */
+    bg: "bg-[#FFEBD6]",
     iconBg: "bg-[#FFBE7A]",
     icon: <Landmark className="w-4 h-4 text-black" />
   },
   sports: {
-    bg: "bg-[#E6F9FF]", /* Very soft blue */
+    bg: "bg-[#E6F9FF]",
     iconBg: "bg-[#7AE4FF]",
     icon: <Trophy className="w-4 h-4 text-black" />
   },
   cinema: {
-    bg: "bg-[#F7EFFF]", /* Very soft violet */
+    bg: "bg-[#F7EFFF]",
     iconBg: "bg-[#C87AFF]",
     icon: <Film className="w-4 h-4 text-black" />
   },
   science: {
-    bg: "bg-[#EDFFE6]", /* Very soft green */
+    bg: "bg-[#EDFFE6]",
     iconBg: "bg-[#7AFF9B]",
     icon: <Rocket className="w-4 h-4 text-black" />
   },
   general: {
-    bg: "bg-[#FFE6EC]", /* Very soft pink */
+    bg: "bg-[#FFE6EC]",
     iconBg: "bg-[#FF7A9B]",
     icon: <History className="w-4 h-4 text-black" />
   }
@@ -48,9 +50,28 @@ export function TriviaCard({
   isSelected = false,
   onDragStart,
   onDragEnd,
-  onClick
+  onClick,
+  skipInitialFlip = false
 }: TriviaCardProps) {
   const theme = CATEGORY_THEMES[card.category];
+  
+  // 3D Flip States: starts face-down, flips face-up in mid-air
+  const [isFlipped, setIsFlipped] = useState(
+    skipInitialFlip ? (revealed ? true : false) : (revealed ? false : true)
+  );
+
+  useEffect(() => {
+    if (skipInitialFlip) {
+      setIsFlipped(revealed ? true : false);
+      return;
+    }
+
+    setIsFlipped(revealed ? false : true);
+    const timer = setTimeout(() => {
+      setIsFlipped(revealed ? true : false);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [revealed, card.id, skipInitialFlip]);
 
   const formatYear = (year: number) => {
     if (year < 0) {
@@ -66,64 +87,99 @@ export function TriviaCard({
       onDragEnd={isCurrent ? onDragEnd : undefined}
       onClick={onClick}
       className={`
-        relative w-44 h-60 border-[3px] border-black p-4 select-none flex flex-col justify-between rounded-none
-        ${isCurrent ? "cursor-grab active:cursor-grabbing hover:translate-x-[-3px] hover:translate-y-[-3px]" : ""}
+        relative w-44 h-60 perspective-1000 select-none rounded-none
+        ${isCurrent ? "cursor-grab active:cursor-grabbing hover:scale-[1.02]" : ""}
         ${isDragging ? "opacity-30 scale-95" : "opacity-100"}
-        ${isSelected 
-          ? "bg-[#FFF97A] translate-x-[2px] translate-y-[2px] shadow-[2px_2px_0px_rgba(0,0,0,1)] ring-3 ring-black" 
-          : revealed 
-          ? `${theme.bg} shadow-[4px_4px_0px_rgba(0,0,0,1)]` 
-          : "bg-[#FFE885] shadow-[6px_6px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_rgba(0,0,0,1)]"
-        }
-        transition-all duration-100 ease-out
+        ${isCurrent && isSelected ? "ring-4 ring-black translate-x-[2px] translate-y-[2px]" : ""}
+        transition-all duration-200 ease-out
       `}
     >
-      {/* Header Info */}
-      <div className="flex items-center justify-between w-full">
-        <div className={`flex items-center gap-1 px-2 py-0.5 border-2 border-black text-[9px] font-black uppercase ${theme.iconBg}`}>
-          {theme.icon}
-          <span>{card.category}</span>
-        </div>
-        {!revealed && (
-          <HelpCircle className="w-4 h-4 text-black stroke-[2.5]" />
-        )}
-      </div>
-
-      {/* Main Content Area */}
-      {revealed ? (
-        /* Revealed Timeline State */
-        <div className="flex-1 flex flex-col justify-center items-center text-center py-2">
-          <div className="bg-[#FFF97A] border-[2px] border-black px-3 py-1 text-sm font-black text-black uppercase tracking-wide flex items-center gap-1.5 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
-            <Calendar className="w-4 h-4 text-black stroke-[2.5]" />
-            {formatYear(card.year)}
+      {/* 3D Rotating Wrapper */}
+      <div 
+        className="relative w-full h-full preserve-3d transition-transform duration-500 ease-out"
+        style={{
+          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+        }}
+      >
+        {/* ================= FACE A: CLUE FACE (Front) ================= */}
+        <div 
+          className="absolute inset-0 backface-hidden border-[3px] border-black p-4 flex flex-col justify-between rounded-none bg-[#FFE885] shadow-brutal"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between w-full">
+            <div className={`flex items-center gap-1 px-2 py-0.5 border-2 border-black text-[9px] font-black uppercase ${theme.iconBg}`}>
+              {theme.icon}
+              <span>{card.category}</span>
+            </div>
+            <HelpCircle className="w-4 h-4 text-black stroke-[2.5]" />
           </div>
-          <h4 className="mt-4 text-xs font-black text-black uppercase leading-tight line-clamp-2 px-1">
-            {card.title}
-          </h4>
-        </div>
-      ) : (
-        /* Active Sorting Card State */
-        <div className="flex-1 flex flex-col justify-center py-2 text-center">
-          <h4 className="text-sm font-black text-black uppercase leading-tight tracking-tight mb-2">
-            {card.title}
-          </h4>
-          <p className="text-[10px] text-black font-semibold leading-normal line-clamp-4 bg-white border border-black/30 p-1.5 shadow-[2px_2px_0px_rgba(0,0,0,0.15)]">
-            {card.description}
-          </p>
-        </div>
-      )}
 
-      {/* Card Footer Design Decor */}
-      <div className="w-full flex justify-center mt-2 border-t-[1.5px] border-black pt-1.5">
-        {revealed ? (
-          <p className="text-[8px] font-semibold text-black leading-tight line-clamp-2 text-center italic">
-            {card.description}
-          </p>
-        ) : (
-          <span className="text-[9px] font-extrabold text-black uppercase tracking-wider bg-white border border-black px-2 py-0.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
-            {isCurrent ? "SORT ME!" : "Bharat trivia"}
-          </span>
-        )}
+          {/* Clue Text */}
+          <div className="flex-1 flex flex-col justify-center py-2 text-center">
+            <h4 className="text-sm font-black text-black uppercase leading-tight tracking-tight mb-2">
+              {card.title}
+            </h4>
+            <p className="text-[10px] text-black font-semibold leading-normal line-clamp-4 bg-white border border-black/35 p-1.5 shadow-[2px_2px_0px_rgba(0,0,0,0.15)]">
+              {card.description}
+            </p>
+          </div>
+
+          {/* Footer */}
+          <div className="w-full flex justify-center mt-2 border-t-[1.5px] border-black pt-1.5">
+            <span className="text-[9px] font-extrabold text-black uppercase tracking-wider bg-white border border-black px-2 py-0.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+              {isCurrent ? "SORT ME!" : "BHARAT TRIVIA"}
+            </span>
+          </div>
+        </div>
+
+        {/* ================= FACE B: BACK FACE (Card Back OR Year Face) ================= */}
+        <div 
+          className="absolute inset-0 backface-hidden rotate-y-180 rounded-none"
+        >
+          {revealed ? (
+            /* Revealed Year Face */
+            <div className={`w-full h-full border-[3px] border-black p-4 flex flex-col justify-between rounded-none ${theme.bg} shadow-brutal`}>
+              {/* Header */}
+              <div className="flex items-center justify-between w-full">
+                <div className={`flex items-center gap-1 px-2 py-0.5 border-2 border-black text-[9px] font-black uppercase ${theme.iconBg}`}>
+                  {theme.icon}
+                  <span>{card.category}</span>
+                </div>
+                <span className="text-[10px] text-slate-700 font-mono">
+                  #{card.id.split("_")[1]}
+                </span>
+              </div>
+
+              {/* Year Value */}
+              <div className="flex-1 flex flex-col justify-center items-center text-center py-2">
+                <div className="bg-[#FFF97A] border-[2px] border-black px-3 py-1 text-sm font-black text-black uppercase tracking-wide flex items-center gap-1.5 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                  <Calendar className="w-4 h-4 text-black stroke-[2.5]" />
+                  {formatYear(card.year)}
+                </div>
+                <h4 className="mt-4 text-xs font-black text-black uppercase leading-tight line-clamp-2 px-1">
+                  {card.title}
+                </h4>
+              </div>
+
+              {/* Description */}
+              <div className="w-full flex justify-center mt-2 border-t-[1.5px] border-black pt-1.5">
+                <p className="text-[8px] font-semibold text-black leading-tight line-clamp-2 text-center italic">
+                  {card.description}
+                </p>
+              </div>
+            </div>
+          ) : (
+            /* Card Back Design (Draw Pile Style) */
+            <div className="w-full h-full border-[3px] border-black rounded-none bg-card-back shadow-brutal flex flex-col justify-center items-center p-4">
+              <div className="w-16 h-16 rounded-full border-[3px] border-black bg-[#FFF97A] flex items-center justify-center shadow-brutal-sm rotate-[-6deg] animate-pulse">
+                <span className="text-3xl font-black text-black">?</span>
+              </div>
+              <div className="mt-6 border-2 border-black bg-white px-3 py-1 shadow-brutal-sm rotate-[3deg]">
+                <span className="text-[9px] font-black text-black uppercase tracking-widest">BHARAT CHRONO</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

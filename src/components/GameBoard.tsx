@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Category, useGameState } from "../hooks/useGameState";
 import { TriviaCard } from "./TriviaCard";
 import { Heart, ArrowLeft, Plus, ChevronRight, ChevronLeft } from "lucide-react";
+import gsap from "gsap";
 
 interface GameBoardProps {
   category: Category;
@@ -48,7 +49,161 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
   const [shakeHearts, setShakeHearts] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // Neubrutalist Staggered Deal Animation states
+  const [showDeck, setShowDeck] = useState(false);
+  const [showBaseCard, setShowBaseCard] = useState(false);
+  const [showActiveCard, setShowActiveCard] = useState(false);
+
+  // Global deal animation layer state
+  interface DealAnimation {
+    card: typeof timeline[0];
+    from: { x: number; y: number };
+    to: { x: number; y: number };
+    type: "timeline" | "active";
+  }
+  const [dealAnimation, setDealAnimation] = useState<DealAnimation | null>(null);
+
+  const boardRef = useRef<HTMLDivElement>(null);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
+  const isFirstCardRef = useRef(true);
+
+  // 1. Initial mount dealing sequence using global DealAnimationLayer
+  useEffect(() => {
+    // A. Slide up the draw pile deck
+    const deckTimer = setTimeout(() => {
+      setShowDeck(true);
+    }, 100);
+
+    // B. Deal the first baseline card from the deck to the timeline
+    const baseTimer = setTimeout(() => {
+      const boardEl = boardRef.current;
+      const deckEl = document.getElementById("draw-pile-deck");
+      const targetEl = document.getElementById("timeline-base-placeholder");
+
+      if (boardEl && deckEl && targetEl) {
+        const boardRect = boardEl.getBoundingClientRect();
+        const deckRect = deckEl.getBoundingClientRect();
+        const targetRect = targetEl.getBoundingClientRect();
+
+        setDealAnimation({
+          card: timeline[0],
+          from: {
+            x: deckRect.left - boardRect.left,
+            y: deckRect.top - boardRect.top
+          },
+          to: {
+            x: targetRect.left - boardRect.left,
+            y: targetRect.top - boardRect.top
+          },
+          type: "timeline"
+        });
+
+        // End of base deal flight
+        const baseFinishTimer = setTimeout(() => {
+          setShowBaseCard(true);
+          setDealAnimation(null);
+        }, 750);
+
+        return () => clearTimeout(baseFinishTimer);
+      } else {
+        // Fallback
+        setShowBaseCard(true);
+      }
+    }, 800);
+
+    // C. Deal the first sorting card
+    const activeTimer = setTimeout(() => {
+      if (!currentCard) return;
+      const boardEl = boardRef.current;
+      const deckEl = document.getElementById("draw-pile-deck");
+      const targetEl = document.getElementById("active-card-placeholder");
+
+      if (boardEl && deckEl && targetEl) {
+        const boardRect = boardEl.getBoundingClientRect();
+        const deckRect = deckEl.getBoundingClientRect();
+        const targetRect = targetEl.getBoundingClientRect();
+
+        setDealAnimation({
+          card: currentCard,
+          from: {
+            x: deckRect.left - boardRect.left,
+            y: deckRect.top - boardRect.top
+          },
+          to: {
+            x: targetRect.left - boardRect.left,
+            y: targetRect.top - boardRect.top
+          },
+          type: "active"
+        });
+
+        // End of active deal flight
+        const activeFinishTimer = setTimeout(() => {
+          setShowActiveCard(true);
+          setDealAnimation(null);
+        }, 750);
+
+        return () => clearTimeout(activeFinishTimer);
+      } else {
+        // Fallback
+        setShowActiveCard(true);
+      }
+    }, 1700);
+
+    return () => {
+      clearTimeout(deckTimer);
+      clearTimeout(baseTimer);
+      clearTimeout(activeTimer);
+    };
+  }, []);
+
+  // 2. Subsequent draw sequences (flip face-up on the deck)
+  useEffect(() => {
+    if (!currentCard) return;
+
+    if (isFirstCardRef.current) {
+      isFirstCardRef.current = false;
+      return;
+    }
+
+    // Reset active card to face-down top card of the deck
+    setShowActiveCard(false);
+
+    // Trigger flip face-up to show the new clue after placement settles
+    const timer = setTimeout(() => {
+      setShowActiveCard(true);
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [currentCard?.id]);
+
+  // 3. GSAP deal animation execution
+  useEffect(() => {
+    if (!dealAnimation) return;
+
+    const animEl = document.getElementById("deal-animation-card");
+    if (!animEl) return;
+
+    gsap.killTweensOf(animEl);
+    gsap.fromTo(animEl,
+      {
+        x: 0,
+        y: 0,
+        scale: 0.25,
+        rotation: dealAnimation.type === "timeline" ? 12 : -12,
+        opacity: 0
+      },
+      {
+        x: dealAnimation.to.x - dealAnimation.from.x,
+        y: dealAnimation.to.y - dealAnimation.from.y,
+        scale: 1,
+        rotation: 0,
+        opacity: 1,
+        duration: 0.75,
+        ease: "power2.out"
+      }
+    );
+  }, [dealAnimation]);
+
 
   // Scroll timeline left/right
   const scrollTimeline = (direction: "left" | "right") => {
@@ -186,7 +341,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
   };
 
   return (
-    <div className="w-full flex flex-col items-center justify-between min-h-[90vh] py-4 px-4 select-none">
+    <div ref={boardRef} className="relative w-full flex flex-col items-center justify-between min-h-[90vh] py-4 px-4 select-none">
       {/* Top Header Panel */}
       <header className="w-full max-w-5xl flex items-center justify-between px-6 py-4 border-brutal-thick bg-white text-black shadow-brutal mb-10 rotate-[-0.5deg]">
         <div className="flex items-center gap-4">
@@ -243,82 +398,94 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
             ref={timelineContainerRef}
             className="w-full max-w-5xl overflow-x-auto no-scrollbar py-8 flex items-center px-12 snap-x"
           >
-            {timeline.map((card, idx) => {
-              const isCorrectFeedback = feedbackCardId === card.id && feedbackType === "correct";
-              const isIncorrectFeedback = feedbackCardId === card.id && feedbackType === "incorrect";
+            {/* Timeline Base Placeholder (for GSAP deal flight targeting) */}
+            {!showBaseCard && (
+              <div 
+                id="timeline-base-placeholder" 
+                className="w-44 h-60 border-[3px] border-dashed border-black/20 mx-4 opacity-0 flex-shrink-0"
+              />
+            )}
+            
+            {showBaseCard && (
+              <>
+                {timeline.map((card, idx) => {
+                  const isCorrectFeedback = feedbackCardId === card.id && feedbackType === "correct";
+                  const isIncorrectFeedback = feedbackCardId === card.id && feedbackType === "incorrect";
 
-              return (
-                <div key={`timeline-item-${card.id}`} className="flex items-center flex-shrink-0 snap-center">
-                  
-                  {/* Dropzone */}
+                  return (
+                    <div key={`timeline-item-${card.id}`} className="flex items-center flex-shrink-0 snap-center">
+                      
+                      {/* Dropzone */}
+                      <div
+                        onDragOver={(e) => handleDragOver(e, idx)}
+                        onDragEnter={(e) => handleDragEnter(e, idx)}
+                        onDragLeave={() => handleDragLeave(idx)}
+                        onDrop={(e) => handleDrop(e, idx)}
+                        onClick={() => handleDropzoneClick(idx)}
+                        className={`
+                          dropzone-active h-60 flex flex-col items-center justify-center rounded-none border-[3px] border-dashed border-black
+                          ${hoveredDropzone === idx
+                            ? "w-44 bg-[#7AFF9B] border-solid shadow-brutal translate-x-[-3px] translate-y-[-3px] mx-4"
+                            : isCardSelected
+                            ? "w-44 bg-[#FFF97A] border-solid shadow-brutal cursor-pointer mx-4 animate-pulse"
+                            : isDragging
+                            ? "w-20 bg-slate-100 border-black/40 mx-2"
+                            : "w-6 border-transparent mx-1"
+                          }
+                        `}
+                      >
+                        {(hoveredDropzone === idx || isCardSelected) && (
+                          <div className="flex flex-col items-center gap-2 text-black p-4 text-center">
+                            <Plus className="w-8 h-8 stroke-[3]" />
+                            <span className="text-[10px] font-black tracking-tighter uppercase">PLACE CARD</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Card wrapper */}
+                      <div 
+                        className={`
+                          relative rounded-2xl transition-all duration-300
+                          ${isCorrectFeedback ? "animate-flash-correct border-[3px] border-black" : ""}
+                          ${isIncorrectFeedback ? "animate-shake-brutal border-[3px] border-red-500 bg-[#FFD1D1]" : ""}
+                        `}
+                      >
+                        <TriviaCard card={card} revealed={true} skipInitialFlip={idx === 0} />
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* End Dropzone */}
+                <div className="flex items-center flex-shrink-0 snap-center">
                   <div
-                    onDragOver={(e) => handleDragOver(e, idx)}
-                    onDragEnter={(e) => handleDragEnter(e, idx)}
-                    onDragLeave={() => handleDragLeave(idx)}
-                    onDrop={(e) => handleDrop(e, idx)}
-                    onClick={() => handleDropzoneClick(idx)}
+                    onDragOver={(e) => handleDragOver(e, timeline.length)}
+                    onDragEnter={(e) => handleDragEnter(e, timeline.length)}
+                    onDragLeave={() => handleDragLeave(timeline.length)}
+                    onDrop={(e) => handleDrop(e, timeline.length)}
+                    onClick={() => handleDropzoneClick(timeline.length)}
                     className={`
                       dropzone-active h-60 flex flex-col items-center justify-center rounded-none border-[3px] border-dashed border-black
-                      ${hoveredDropzone === idx
+                      ${hoveredDropzone === timeline.length
                         ? "w-44 bg-[#7AFF9B] border-solid shadow-brutal translate-x-[-3px] translate-y-[-3px] mx-4"
                         : isCardSelected
-                        ? "w-44 bg-[#FFF97A] border-solid shadow-brutal cursor-pointer mx-4 animate-pulse"
+                        ? "w-44 bg-[#FFF97A] border-solid shadow-brutal cursor-pointer mx-4 snap-center animate-pulse"
                         : isDragging
                         ? "w-20 bg-slate-100 border-black/40 mx-2"
                         : "w-6 border-transparent mx-1"
                       }
                     `}
                   >
-                    {(hoveredDropzone === idx || isCardSelected) && (
+                    {(hoveredDropzone === timeline.length || isCardSelected) && (
                       <div className="flex flex-col items-center gap-2 text-black p-4 text-center">
                         <Plus className="w-8 h-8 stroke-[3]" />
                         <span className="text-[10px] font-black tracking-tighter uppercase">PLACE CARD</span>
                       </div>
                     )}
                   </div>
-
-                  {/* Card wrapper */}
-                  <div 
-                    className={`
-                      relative transition-all duration-300
-                      ${isCorrectFeedback ? "animate-flash-correct border-[3px] border-black" : ""}
-                      ${isIncorrectFeedback ? "animate-shake-brutal border-[3px] border-red-500 bg-[#FFD1D1]" : ""}
-                    `}
-                  >
-                    <TriviaCard card={card} revealed={true} />
-                  </div>
                 </div>
-              );
-            })}
-
-            {/* End Dropzone */}
-            <div className="flex items-center flex-shrink-0 snap-center">
-              <div
-                onDragOver={(e) => handleDragOver(e, timeline.length)}
-                onDragEnter={(e) => handleDragEnter(e, timeline.length)}
-                onDragLeave={() => handleDragLeave(timeline.length)}
-                onDrop={(e) => handleDrop(e, timeline.length)}
-                onClick={() => handleDropzoneClick(timeline.length)}
-                className={`
-                  dropzone-active h-60 flex flex-col items-center justify-center rounded-none border-[3px] border-dashed border-black
-                  ${hoveredDropzone === timeline.length
-                    ? "w-44 bg-[#7AFF9B] border-solid shadow-brutal translate-x-[-3px] translate-y-[-3px] mx-4"
-                    : isCardSelected
-                    ? "w-44 bg-[#FFF97A] border-solid shadow-brutal cursor-pointer mx-4 snap-center animate-pulse"
-                    : isDragging
-                    ? "w-20 bg-slate-100 border-black/40 mx-2"
-                    : "w-6 border-transparent mx-1"
-                  }
-                `}
-              >
-                {(hoveredDropzone === timeline.length || isCardSelected) && (
-                  <div className="flex flex-col items-center gap-2 text-black p-4 text-center">
-                    <Plus className="w-8 h-8 stroke-[3]" />
-                    <span className="text-[10px] font-black tracking-tighter uppercase">PLACE CARD</span>
-                  </div>
-                )}
-              </div>
-            </div>
+              </>
+            )}
           </div>
 
           <button
@@ -329,40 +496,78 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
           </button>
         </div>
 
-        {/* Next Card To Sort Area */}
+        {/* Next Card To Sort / Draw Deck Area */}
         {currentCard && (
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-4 mt-6">
             <span className="text-xs font-black bg-white border-2 border-black text-black px-3 py-1 uppercase shadow-brutal-sm rotate-[-1deg]">
-              Next Event Card
+              Draw Deck Pile
             </span>
-            <div className="relative">
-              {isCardSelected && (
-                <div className="absolute inset-0 border-brutal-thick bg-amber-400/20 shadow-brutal scale-105" />
-              )}
-              <TriviaCard
-                card={currentCard}
-                revealed={false}
-                isCurrent={!isAnimating}
-                isDragging={isDragging}
-                isSelected={isCardSelected}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-                onClick={handleCardClick}
-              />
+
+            {/* Unified Physical Deck Wrapper */}
+            <div 
+              className={`relative w-44 h-60 select-none transition-all duration-500 ${
+                showDeck ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0"
+              }`}
+            >
+              {/* Layered stack of face-down card backs underneath */}
+              <div className="absolute inset-0 translate-y-3 translate-x-2 rotate-[4deg] bg-card-back border-[3px] border-black shadow-brutal-sm opacity-60"></div>
+              <div className="absolute inset-0 translate-y-1.5 translate-x-[-1px] rotate-[-2deg] bg-card-back border-[3px] border-black shadow-brutal-sm opacity-80"></div>
+              
+              {/* Top card of the deck (ID: draw-pile-deck for GSAP tracking) */}
+              <div id="draw-pile-deck" className="absolute inset-0 translate-y-0 translate-x-0 rotate-0">
+                {showActiveCard ? (
+                  <div key={`deal-${currentCard.id}`} className="relative w-full h-full">
+                    {isCardSelected && (
+                      <div className="absolute inset-0 border-brutal-thick bg-amber-400/20 shadow-brutal scale-105" />
+                    )}
+                    <TriviaCard
+                      card={currentCard}
+                      revealed={false}
+                      isCurrent={!isAnimating}
+                      isDragging={isDragging}
+                      isSelected={isCardSelected}
+                      onDragStart={handleDragStart}
+                      onDragEnd={handleDragEnd}
+                      onClick={handleCardClick}
+                    />
+                  </div>
+                ) : (
+                  /* Face-down card back representation during baseline deals or draws */
+                  <div className="w-full h-full border-[3px] border-black bg-card-back shadow-brutal flex flex-col justify-center items-center p-4">
+                    <div className="w-16 h-16 rounded-full border-[3px] border-black bg-[#FFF97A] flex items-center justify-center shadow-brutal-sm rotate-[-6deg] animate-pulse">
+                      <span className="text-3xl font-black text-black">?</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            
+
             {/* Guide Bubble */}
-            <div className="border-2 border-black bg-white text-black p-3 shadow-brutal-sm text-center max-w-sm rotate-[1.5deg]">
+            <div className="border-2 border-black bg-white text-black p-3 shadow-brutal-sm text-center max-w-sm rotate-[1.5deg] mt-2">
               <p className="text-[10px] font-bold uppercase">
                 {isCardSelected 
                   ? "👉 Click any highlighted slot on the timeline to place card!"
-                  : "💡 Drag this card into the timeline slots, or tap it to select."
+                  : "💡 Drag this card directly off the deck into the timeline slots!"
                 }
               </p>
             </div>
           </div>
         )}
       </main>
+      {dealAnimation && (
+        <div
+          id="deal-animation-card"
+          className="absolute z-50 pointer-events-none"
+          style={{
+            left: dealAnimation.from.x,
+            top: dealAnimation.from.y,
+            width: 176,
+            height: 240,
+          }}
+        >
+          <TriviaCard card={dealAnimation.card} revealed={dealAnimation.type === "timeline"} />
+        </div>
+      )}
     </div>
   );
 }
