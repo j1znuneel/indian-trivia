@@ -1,5 +1,5 @@
 import { TriviaCard as CardType } from "../data/trivia";
-import { Landmark, Trophy, Film, Rocket, History, Calendar } from "lucide-react";
+import { Landmark, Trophy, Film, Rocket, History, Calendar, HelpCircle } from "lucide-react";
 
 interface TriviaCardProps {
   card: CardType;
@@ -12,36 +12,31 @@ interface TriviaCardProps {
   onClick?: () => void;
 }
 
-const CATEGORY_STYLES = {
+const CATEGORY_THEMES = {
   history: {
-    accent: "border-orange-500/30 text-orange-400",
-    bg: "from-orange-950/40 to-slate-900/90",
-    icon: <Landmark className="w-4 h-4 text-orange-400" />,
-    badgeBg: "bg-orange-500/10 text-orange-400 border-orange-500/20"
+    bg: "bg-[#FFEBD6]", /* Very soft orange */
+    iconBg: "bg-[#FFBE7A]",
+    icon: <Landmark className="w-4 h-4 text-black" />
   },
   sports: {
-    accent: "border-cyan-500/30 text-cyan-400",
-    bg: "from-cyan-950/40 to-slate-900/90",
-    icon: <Trophy className="w-4 h-4 text-cyan-400" />,
-    badgeBg: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
+    bg: "bg-[#E6F9FF]", /* Very soft blue */
+    iconBg: "bg-[#7AE4FF]",
+    icon: <Trophy className="w-4 h-4 text-black" />
   },
   cinema: {
-    accent: "border-purple-500/30 text-purple-400",
-    bg: "from-purple-950/40 to-slate-900/90",
-    icon: <Film className="w-4 h-4 text-purple-400" />,
-    badgeBg: "bg-purple-500/10 text-purple-400 border-purple-500/20"
+    bg: "bg-[#F7EFFF]", /* Very soft violet */
+    iconBg: "bg-[#C87AFF]",
+    icon: <Film className="w-4 h-4 text-black" />
   },
   science: {
-    accent: "border-emerald-500/30 text-emerald-400",
-    bg: "from-emerald-950/40 to-slate-900/90",
-    icon: <Rocket className="w-4 h-4 text-emerald-400" />,
-    badgeBg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+    bg: "bg-[#EDFFE6]", /* Very soft green */
+    iconBg: "bg-[#7AFF9B]",
+    icon: <Rocket className="w-4 h-4 text-black" />
   },
   general: {
-    accent: "border-rose-500/30 text-rose-400",
-    bg: "from-rose-950/40 to-slate-900/90",
-    icon: <History className="w-4 h-4 text-rose-400" />,
-    badgeBg: "bg-rose-500/10 text-rose-400 border-rose-500/20"
+    bg: "bg-[#FFE6EC]", /* Very soft pink */
+    iconBg: "bg-[#FF7A9B]",
+    icon: <History className="w-4 h-4 text-black" />
   }
 };
 
@@ -55,7 +50,7 @@ export function TriviaCard({
   onDragEnd,
   onClick
 }: TriviaCardProps) {
-  const styles = CATEGORY_STYLES[card.category];
+  const theme = CATEGORY_THEMES[card.category];
 
   const formatYear = (year: number) => {
     if (year < 0) {
@@ -71,66 +66,64 @@ export function TriviaCard({
       onDragEnd={isCurrent ? onDragEnd : undefined}
       onClick={onClick}
       className={`
-        relative w-40 h-56 rounded-2xl border bg-gradient-to-b ${styles.bg} ${styles.accent}
-        flex flex-col justify-between p-4 select-none transition-all duration-300
-        ${isCurrent ? "cursor-grab active:cursor-grabbing hover:scale-105" : ""}
-        ${isDragging ? "opacity-40 scale-95" : "opacity-100"}
-        ${isSelected ? "ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-950 scale-105" : ""}
-        ${isCurrent && !isSelected ? "hover:shadow-lg hover:shadow-slate-900/50" : ""}
-        group perspective-1000
+        relative w-44 h-60 border-[3px] border-black p-4 select-none flex flex-col justify-between rounded-none
+        ${isCurrent ? "cursor-grab active:cursor-grabbing hover:translate-x-[-3px] hover:translate-y-[-3px]" : ""}
+        ${isDragging ? "opacity-30 scale-95" : "opacity-100"}
+        ${isSelected 
+          ? "bg-[#FFF97A] translate-x-[2px] translate-y-[2px] shadow-[2px_2px_0px_rgba(0,0,0,1)] ring-3 ring-black" 
+          : revealed 
+          ? `${theme.bg} shadow-[4px_4px_0px_rgba(0,0,0,1)]` 
+          : "bg-[#FFE885] shadow-[6px_6px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_rgba(0,0,0,1)]"
+        }
+        transition-all duration-100 ease-out
       `}
     >
-      {/* 3D hover flip effect wrapper (only for non-timeline active cards) */}
-      <div className="flex flex-col justify-between h-full w-full">
-        {/* Header containing category icon & label */}
-        <div className="flex items-center justify-between w-full">
-          <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${styles.badgeBg}`}>
-            {styles.icon}
-            <span className="capitalize">{card.category}</span>
-          </div>
-          {revealed && (
-            <span className="text-[10px] text-slate-500 font-mono">
-              #{card.id.split("_")[1]}
-            </span>
-          )}
+      {/* Header Info */}
+      <div className="flex items-center justify-between w-full">
+        <div className={`flex items-center gap-1 px-2 py-0.5 border-2 border-black text-[9px] font-black uppercase ${theme.iconBg}`}>
+          {theme.icon}
+          <span>{card.category}</span>
         </div>
-
-        {/* Year display if revealed */}
-        {revealed ? (
-          <div className="flex-1 flex flex-col justify-center items-center text-center py-2">
-            <div className="bg-slate-800/80 border border-slate-700/50 px-3 py-1 rounded-lg text-lg font-black tracking-wide text-amber-300 flex items-center gap-1.5 shadow-inner shadow-black/40">
-              <Calendar className="w-4 h-4 text-amber-400" />
-              {formatYear(card.year)}
-            </div>
-            <h4 className="mt-3 text-xs font-bold text-slate-200 line-clamp-2 px-1">
-              {card.title}
-            </h4>
-          </div>
-        ) : (
-          /* Clue/Title if unrevealed */
-          <div className="flex-1 flex flex-col justify-center py-2 overflow-hidden text-center">
-            <h4 className="text-sm font-extrabold text-slate-100 leading-tight mb-2 group-hover:text-white transition-colors">
-              {card.title}
-            </h4>
-            <p className="text-[10px] text-slate-400 leading-normal line-clamp-4 group-hover:text-slate-300 transition-colors">
-              {card.description}
-            </p>
-          </div>
+        {!revealed && (
+          <HelpCircle className="w-4 h-4 text-black stroke-[2.5]" />
         )}
+      </div>
 
-        {/* Footer/Visual design decoration */}
-        <div className="w-full flex justify-center">
-          {!revealed && (
-            <span className="text-[10px] font-medium text-slate-500 bg-slate-800/50 px-2.5 py-0.5 rounded-full border border-slate-700/30">
-              Drag to timeline
-            </span>
-          )}
-          {revealed && (
-            <p className="text-[9px] text-slate-500 text-center line-clamp-2 leading-tight">
-              {card.description}
-            </p>
-          )}
+      {/* Main Content Area */}
+      {revealed ? (
+        /* Revealed Timeline State */
+        <div className="flex-1 flex flex-col justify-center items-center text-center py-2">
+          <div className="bg-[#FFF97A] border-[2px] border-black px-3 py-1 text-sm font-black text-black uppercase tracking-wide flex items-center gap-1.5 shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+            <Calendar className="w-4 h-4 text-black stroke-[2.5]" />
+            {formatYear(card.year)}
+          </div>
+          <h4 className="mt-4 text-xs font-black text-black uppercase leading-tight line-clamp-2 px-1">
+            {card.title}
+          </h4>
         </div>
+      ) : (
+        /* Active Sorting Card State */
+        <div className="flex-1 flex flex-col justify-center py-2 text-center">
+          <h4 className="text-sm font-black text-black uppercase leading-tight tracking-tight mb-2">
+            {card.title}
+          </h4>
+          <p className="text-[10px] text-black font-semibold leading-normal line-clamp-4 bg-white border border-black/30 p-1.5 shadow-[2px_2px_0px_rgba(0,0,0,0.15)]">
+            {card.description}
+          </p>
+        </div>
+      )}
+
+      {/* Card Footer Design Decor */}
+      <div className="w-full flex justify-center mt-2 border-t-[1.5px] border-black pt-1.5">
+        {revealed ? (
+          <p className="text-[8px] font-semibold text-black leading-tight line-clamp-2 text-center italic">
+            {card.description}
+          </p>
+        ) : (
+          <span className="text-[9px] font-extrabold text-black uppercase tracking-wider bg-white border border-black px-2 py-0.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+            {isCurrent ? "SORT ME!" : "Bharat trivia"}
+          </span>
+        )}
       </div>
     </div>
   );

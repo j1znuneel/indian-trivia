@@ -6,89 +6,93 @@
   }
 
   body {
-    @apply grid place-items-center min-w-[320px] min-h-screen relative m-0 bg-slate-950 text-slate-100 overflow-x-hidden;
-    background-image: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #020617 100%);
+    @apply min-w-[320px] min-h-screen relative m-0 text-black overflow-x-hidden;
+    background-color: #fcf9f2; /* Neubrutalist warm cream/sand background */
+    background-image: 
+      radial-gradient(#000000 1px, transparent 1px), 
+      radial-gradient(#000000 1px, #fcf9f2 1px);
+    background-size: 24px 24px;
+    background-position: 0 0, 12px 12px;
+    opacity: 0.98;
   }
 }
 
-/* Background animation */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  opacity: 0.03;
-  background: url("./logo.svg");
-  background-size: 180px;
-  transform: rotate(-12deg) scale(1.35);
-  animation: slide 45s linear infinite;
-  pointer-events: none;
+/* Neubrutalist Shadows & Borders */
+.border-brutal {
+  border: 3px solid #000000;
 }
 
-@keyframes slide {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: 180px 180px;
-  }
+.border-brutal-thick {
+  border: 4px solid #000000;
 }
 
-/* 3D Card Flip Utilities */
-.perspective-1000 {
-  perspective: 1000px;
+.shadow-brutal-sm {
+  box-shadow: 3px 3px 0px 0px #000000;
 }
 
-.preserve-3d {
-  transform-style: preserve-3d;
+.shadow-brutal {
+  box-shadow: 6px 6px 0px 0px #000000;
 }
 
-.backface-hidden {
-  backface-visibility: hidden;
+.shadow-brutal-lg {
+  box-shadow: 10px 10px 0px 0px #000000;
 }
 
-.rotate-y-180 {
-  transform: rotateY(180deg);
+.shadow-brutal-xl {
+  box-shadow: 14px 14px 0px 0px #000000;
 }
 
-/* Shake Animation (for mistakes) */
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
-  20%, 40%, 60%, 80% { transform: translateX(6px); }
+/* Button Press Effect */
+.btn-brutal-press {
+  transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.animate-shake {
-  animation: shake 0.5s ease-in-out;
+.btn-brutal-press:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px 0px #000000;
 }
 
-/* Heart Drop/Pulse Animation */
-@keyframes heart-break {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.4); filter: hue-rotate(45deg); }
-  100% { transform: scale(0); opacity: 0; }
+.btn-brutal-press:active {
+  transform: translate(3px, 3px);
+  box-shadow: 3px 3px 0px 0px #000000;
 }
 
-.animate-heart-break {
-  animation: heart-break 0.8s forwards ease-in-out;
+/* Card Tilt & Hover Transitions */
+.card-brutal-hover {
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.15);
 }
 
-/* Custom glow effect */
-.glow-green {
-  box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
+.card-brutal-hover:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 9px 9px 0px 0px #000000;
 }
 
-.glow-red {
-  box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
-}
-
-.glow-orange {
-  box-shadow: 0 0 15px rgba(249, 115, 22, 0.4);
-}
-
-/* Smooth margins for Dropzones */
+/* Timeline Dropzone Expansion */
 .dropzone-active {
-  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1.1);
+}
+
+/* Shaking elements */
+@keyframes shake-brutal {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  20% { transform: translateX(-8px) rotate(-1.5deg); }
+  40% { transform: translateX(6px) rotate(1deg); }
+  60% { transform: translateX(-6px) rotate(-1deg); }
+  80% { transform: translateX(4px) rotate(0.5deg); }
+}
+
+.animate-shake-brutal {
+  animation: shake-brutal 0.4s ease-in-out;
+}
+
+/* Pulse color flash for correct */
+@keyframes flash-correct {
+  0%, 100% { background-color: #86efac; } /* neon green */
+  50% { background-color: #22c55e; }
+}
+
+.animate-flash-correct {
+  animation: flash-correct 0.6s infinite alternate;
 }
 
 /* Hide scrollbar but keep functionality */
@@ -106,5 +110,6 @@ body::before {
   ::after {
     animation: none !important;
     transition: none !important;
+    transform: none !important;
   }
 }

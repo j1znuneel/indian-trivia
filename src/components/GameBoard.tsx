@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Category, useGameState } from "../hooks/useGameState";
 import { TriviaCard } from "./TriviaCard";
-import { Heart, ArrowLeft, RotateCcw, Plus, ChevronRight, ChevronLeft } from "lucide-react";
+import { Heart, ArrowLeft, Plus, ChevronRight, ChevronLeft } from "lucide-react";
 
 interface GameBoardProps {
   category: Category;
@@ -16,6 +16,14 @@ const CATEGORY_NAMES: Record<Category, string> = {
   general: "General & Culture"
 };
 
+const CATEGORY_HEADER_BG: Record<Category, string> = {
+  history: "bg-[#FFBE7A]",
+  sports: "bg-[#7AE4FF]",
+  cinema: "bg-[#C87AFF]",
+  science: "bg-[#7AFF9B]",
+  general: "bg-[#FF7A9B]"
+};
+
 export function GameBoard({ category, gameState }: GameBoardProps) {
   const {
     timeline,
@@ -24,8 +32,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
     lives,
     highScores,
     placeCard,
-    resetGame,
-    restartGame
+    resetGame
   } = gameState;
 
   // Drag & Drop State
@@ -57,7 +64,6 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
   // Center the timeline on updates
   useEffect(() => {
     if (timelineContainerRef.current) {
-      // Smoothly scroll to the far right whenever the timeline length changes
       setTimeout(() => {
         if (timelineContainerRef.current) {
           timelineContainerRef.current.scrollTo({
@@ -73,9 +79,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
   const handleDragStart = (e: React.DragEvent) => {
     setIsDragging(true);
     setIsCardSelected(false);
-    // Standard dataTransfer for drag events
     e.dataTransfer.setData("text/plain", currentCard?.id || "");
-    // Make the ghost image look nice
     e.dataTransfer.effectAllowed = "move";
   };
 
@@ -121,15 +125,13 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
     setIsAnimating(true);
     setIsCardSelected(false);
 
-    // Save ID of card being placed for feedback
     const activeCard = currentCard;
-    const { success, correctIndex } = placeCard(index);
+    const { success } = placeCard(index);
 
     if (success) {
       setFeedbackCardId(activeCard.id);
       setFeedbackType("correct");
       
-      // Clear after animation duration
       setTimeout(() => {
         setFeedbackCardId(null);
         setFeedbackType(null);
@@ -162,24 +164,21 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
     executePlacement(index);
   };
 
-  // Heart rendering helper
+  // Heart rendering helper (Neubrutal black borders)
   const renderHearts = () => {
     const hearts = [];
     for (let i = 0; i < 3; i++) {
       if (i < lives) {
         hearts.push(
-          <Heart
-            key={i}
-            className="w-6 h-6 text-red-500 fill-red-500 transition-transform duration-300 hover:scale-110 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]"
-          />
+          <div key={i} className="p-1 border border-black bg-white rounded-none shadow-[1px_1px_0px_rgba(0,0,0,1)]">
+            <Heart className="w-5 h-5 text-red-500 fill-red-500 stroke-[2.5]" />
+          </div>
         );
       } else {
-        // Lost heart
         hearts.push(
-          <Heart
-            key={i}
-            className="w-6 h-6 text-slate-700 transition-all duration-500 scale-90"
-          />
+          <div key={i} className="p-1 border border-black bg-slate-200 rounded-none shadow-none opacity-45">
+            <Heart className="w-5 h-5 text-slate-500 stroke-[2.5]" />
+          </div>
         );
       }
     }
@@ -187,63 +186,63 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
   };
 
   return (
-    <div className="w-full flex flex-col items-center justify-between min-h-[85vh] py-4 px-2 select-none">
-      {/* Top Navigation / Stats bar */}
-      <header className="w-full max-w-5xl flex items-center justify-between px-4 py-2 bg-slate-900/40 border border-slate-800/40 rounded-2xl backdrop-blur-md mb-8">
-        <div className="flex items-center gap-3">
+    <div className="w-full flex flex-col items-center justify-between min-h-[90vh] py-4 px-4 select-none">
+      {/* Top Header Panel */}
+      <header className="w-full max-w-5xl flex items-center justify-between px-6 py-4 border-brutal-thick bg-white text-black shadow-brutal mb-10 rotate-[-0.5deg]">
+        <div className="flex items-center gap-4">
           <button
             onClick={resetGame}
-            className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors cursor-pointer"
+            className="p-2 border-2 border-black bg-[#FF7A9B] hover:bg-[#FF9CB5] shadow-brutal-sm hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-brutal cursor-pointer active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
             title="Go to Home"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 text-black stroke-[2.5]" />
           </button>
           <div>
-            <h2 className="text-sm font-black text-slate-100">{CATEGORY_NAMES[category]}</h2>
-            <p className="text-[10px] text-slate-500 font-semibold tracking-wider">CHRONOLOGY MATCH</p>
+            <h2 className={`text-base font-black uppercase border-2 border-black px-2 py-0.5 shadow-[2px_2px_0px_rgba(0,0,0,1)] ${CATEGORY_HEADER_BG[category]}`}>
+              {CATEGORY_NAMES[category]}
+            </h2>
           </div>
         </div>
 
-        {/* Lives (Hearts Panel) */}
+        {/* Lives Box */}
         <div 
-          className={`flex items-center gap-1.5 bg-slate-950/60 border border-slate-850 px-4 py-2 rounded-xl ${
-            shakeHearts ? "animate-shake border-red-500/50" : ""
+          className={`flex items-center gap-2 border-2 border-black bg-white px-3 py-1.5 shadow-[3px_3px_0px_rgba(0,0,0,1)] ${
+            shakeHearts ? "animate-shake-brutal bg-[#FF6B6B]" : ""
           }`}
         >
+          <span className="text-[10px] font-black uppercase mr-1">Lives:</span>
           {renderHearts()}
         </div>
 
-        {/* Scores Panel */}
-        <div className="flex items-center gap-6">
-          <div className="text-right">
-            <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-widest">Score</span>
-            <span className="text-xl font-black text-white">{score}</span>
+        {/* Scores */}
+        <div className="flex items-center gap-4">
+          <div className="text-right border-2 border-black bg-[#7AFF9B] px-3 py-1 shadow-brutal-sm">
+            <span className="block text-[8px] font-black uppercase text-black tracking-wide">Score</span>
+            <span className="text-lg font-black text-black">{score}</span>
           </div>
-          <div className="text-right border-l border-slate-800 pl-6">
-            <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-widest">Best</span>
-            <span className="text-xl font-black text-amber-400">{highScores}</span>
+          <div className="text-right border-2 border-black bg-[#FFF97A] px-3 py-1 shadow-brutal-sm">
+            <span className="block text-[8px] font-black uppercase text-black tracking-wide">Best</span>
+            <span className="text-lg font-black text-black">{highScores}</span>
           </div>
         </div>
       </header>
 
-      {/* Main Workspace: Timeline Container & Scrolling */}
+      {/* Timeline Section */}
       <main className="w-full flex flex-col items-center justify-center flex-1 my-4">
-        {/* Timeline Row */}
-        <div className="relative w-full flex items-center justify-center mb-12">
-          {/* Scroll Buttons */}
+        <div className="relative w-full flex items-center justify-center mb-16">
+          {/* Timeline Scroll Buttons */}
           <button
             onClick={() => scrollTimeline("left")}
-            className="absolute left-2 z-20 p-3 rounded-full border border-slate-800 bg-slate-950/80 hover:bg-slate-900 text-slate-400 hover:text-white backdrop-blur shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer hidden md:flex"
+            className="absolute left-2 z-20 p-3 border-2 border-black bg-[#FFF97A] hover:bg-[#FFFBA9] text-black shadow-brutal hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer hidden md:flex"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-6 h-6 stroke-[2.5]" />
           </button>
 
-          {/* Horizontal Scrolling Timeline viewport */}
+          {/* Scrolling timeline container */}
           <div
             ref={timelineContainerRef}
-            className="w-full max-w-5xl overflow-x-auto no-scrollbar py-6 flex items-center px-8 snap-x"
+            className="w-full max-w-5xl overflow-x-auto no-scrollbar py-8 flex items-center px-12 snap-x"
           >
-            {/* Iterative Timeline Render (Cards and Dropzones) */}
             {timeline.map((card, idx) => {
               const isCorrectFeedback = feedbackCardId === card.id && feedbackType === "correct";
               const isIncorrectFeedback = feedbackCardId === card.id && feedbackType === "incorrect";
@@ -251,7 +250,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
               return (
                 <div key={`timeline-item-${card.id}`} className="flex items-center flex-shrink-0 snap-center">
                   
-                  {/* Dropzone before current card */}
+                  {/* Dropzone */}
                   <div
                     onDragOver={(e) => handleDragOver(e, idx)}
                     onDragEnter={(e) => handleDragEnter(e, idx)}
@@ -259,31 +258,31 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                     onDrop={(e) => handleDrop(e, idx)}
                     onClick={() => handleDropzoneClick(idx)}
                     className={`
-                      dropzone-active h-56 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed
+                      dropzone-active h-60 flex flex-col items-center justify-center rounded-none border-[3px] border-dashed border-black
                       ${hoveredDropzone === idx
-                        ? "w-40 border-green-500/80 bg-green-950/15 glow-green mx-4"
+                        ? "w-44 bg-[#7AFF9B] border-solid shadow-brutal translate-x-[-3px] translate-y-[-3px] mx-4"
                         : isCardSelected
-                        ? "w-40 border-amber-500/40 bg-amber-500/5 mx-4 hover:border-amber-400/80 cursor-pointer animate-pulse"
+                        ? "w-44 bg-[#FFF97A] border-solid shadow-brutal cursor-pointer mx-4 animate-pulse"
                         : isDragging
-                        ? "w-16 border-slate-700/60 bg-slate-800/5 mx-2"
-                        : "w-4 border-transparent mx-1"
+                        ? "w-20 bg-slate-100 border-black/40 mx-2"
+                        : "w-6 border-transparent mx-1"
                       }
                     `}
                   >
                     {(hoveredDropzone === idx || isCardSelected) && (
-                      <div className="flex flex-col items-center gap-2 text-slate-400">
-                        <Plus className={`w-6 h-6 ${isCardSelected ? "text-amber-400" : "text-green-400"}`} />
-                        <span className="text-[10px] font-bold tracking-wider uppercase">Place here</span>
+                      <div className="flex flex-col items-center gap-2 text-black p-4 text-center">
+                        <Plus className="w-8 h-8 stroke-[3]" />
+                        <span className="text-[10px] font-black tracking-tighter uppercase">PLACE CARD</span>
                       </div>
                     )}
                   </div>
 
-                  {/* The Timeline Card */}
+                  {/* Card wrapper */}
                   <div 
                     className={`
-                      relative rounded-2xl transition-all duration-300
-                      ${isCorrectFeedback ? "animate-bounce glow-green bg-green-950/20" : ""}
-                      ${isIncorrectFeedback ? "animate-shake glow-red bg-red-950/20" : ""}
+                      relative transition-all duration-300
+                      ${isCorrectFeedback ? "animate-flash-correct border-[3px] border-black" : ""}
+                      ${isIncorrectFeedback ? "animate-shake-brutal border-[3px] border-red-500 bg-[#FFD1D1]" : ""}
                     `}
                   >
                     <TriviaCard card={card} revealed={true} />
@@ -292,7 +291,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
               );
             })}
 
-            {/* Final Dropzone at the end of the timeline */}
+            {/* End Dropzone */}
             <div className="flex items-center flex-shrink-0 snap-center">
               <div
                 onDragOver={(e) => handleDragOver(e, timeline.length)}
@@ -301,21 +300,21 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                 onDrop={(e) => handleDrop(e, timeline.length)}
                 onClick={() => handleDropzoneClick(timeline.length)}
                 className={`
-                  dropzone-active h-56 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed
+                  dropzone-active h-60 flex flex-col items-center justify-center rounded-none border-[3px] border-dashed border-black
                   ${hoveredDropzone === timeline.length
-                    ? "w-40 border-green-500/80 bg-green-950/15 glow-green mx-4"
+                    ? "w-44 bg-[#7AFF9B] border-solid shadow-brutal translate-x-[-3px] translate-y-[-3px] mx-4"
                     : isCardSelected
-                    ? "w-40 border-amber-500/40 bg-amber-500/5 mx-4 hover:border-amber-400/80 cursor-pointer animate-pulse"
+                    ? "w-44 bg-[#FFF97A] border-solid shadow-brutal cursor-pointer mx-4 snap-center animate-pulse"
                     : isDragging
-                    ? "w-16 border-slate-700/60 bg-slate-800/5 mx-2"
-                    : "w-4 border-transparent mx-1"
+                    ? "w-20 bg-slate-100 border-black/40 mx-2"
+                    : "w-6 border-transparent mx-1"
                   }
                 `}
               >
                 {(hoveredDropzone === timeline.length || isCardSelected) && (
-                  <div className="flex flex-col items-center gap-2 text-slate-400">
-                    <Plus className={`w-6 h-6 ${isCardSelected ? "text-amber-400" : "text-green-400"}`} />
-                    <span className="text-[10px] font-bold tracking-wider uppercase">Place here</span>
+                  <div className="flex flex-col items-center gap-2 text-black p-4 text-center">
+                    <Plus className="w-8 h-8 stroke-[3]" />
+                    <span className="text-[10px] font-black tracking-tighter uppercase">PLACE CARD</span>
                   </div>
                 )}
               </div>
@@ -324,22 +323,21 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
 
           <button
             onClick={() => scrollTimeline("right")}
-            className="absolute right-2 z-20 p-3 rounded-full border border-slate-800 bg-slate-950/80 hover:bg-slate-900 text-slate-400 hover:text-white backdrop-blur shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer hidden md:flex"
+            className="absolute right-2 z-20 p-3 border-2 border-black bg-[#FFF97A] hover:bg-[#FFFBA9] text-black shadow-brutal hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer hidden md:flex"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-6 h-6 stroke-[2.5]" />
           </button>
         </div>
 
-        {/* Current Card Drawer (The event to sort) */}
+        {/* Next Card To Sort Area */}
         {currentCard && (
           <div className="flex flex-col items-center gap-4">
-            <span className="text-xs font-extrabold text-slate-500 uppercase tracking-widest animate-pulse">
-              Next Event to Sort
+            <span className="text-xs font-black bg-white border-2 border-black text-black px-3 py-1 uppercase shadow-brutal-sm rotate-[-1deg]">
+              Next Event Card
             </span>
             <div className="relative">
-              {/* Highlight selection glow */}
               {isCardSelected && (
-                <div className="absolute inset-0 -m-1.5 rounded-[22px] bg-amber-400/20 blur-md animate-pulse" />
+                <div className="absolute inset-0 border-brutal-thick bg-amber-400/20 shadow-brutal scale-105" />
               )}
               <TriviaCard
                 card={currentCard}
@@ -353,13 +351,15 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
               />
             </div>
             
-            {/* Guide Hint */}
-            <p className="text-[10px] text-slate-500 max-w-xs text-center leading-relaxed">
-              {isCardSelected 
-                ? "Click on any highlighted slot (+) on the timeline to place this card."
-                : "Drag this card onto the timeline, or click it to select it for keyboard/tap placement."
-              }
-            </p>
+            {/* Guide Bubble */}
+            <div className="border-2 border-black bg-white text-black p-3 shadow-brutal-sm text-center max-w-sm rotate-[1.5deg]">
+              <p className="text-[10px] font-bold uppercase">
+                {isCardSelected 
+                  ? "👉 Click any highlighted slot on the timeline to place card!"
+                  : "💡 Drag this card into the timeline slots, or tap it to select."
+                }
+              </p>
+            </div>
           </div>
         )}
       </main>

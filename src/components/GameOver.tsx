@@ -1,5 +1,5 @@
 import { Category } from "../hooks/useGameState";
-import { Award, Trophy, RotateCcw, Home, Star } from "lucide-react";
+import { Trophy, RotateCcw, Home, Star, Sparkles } from "lucide-react";
 
 interface GameOverProps {
   score: number;
@@ -29,68 +29,68 @@ export function GameOver({ score, highScore, category, onRestart, onHome }: Game
   const isNewHighScore = score > 0 && score >= highScore;
 
   return (
-    <div className="w-full max-w-md mx-auto p-8 rounded-3xl border border-slate-800 bg-slate-900/80 backdrop-blur-lg text-center shadow-2xl animate-in fade-in zoom-in-95 duration-300">
-      <div className="flex justify-center mb-6">
-        <div className="p-4 bg-slate-800/80 border border-slate-700/50 rounded-2xl relative">
-          <Award className="w-16 h-16 text-amber-400" />
-          {isNewHighScore && (
-            <div className="absolute -top-2 -right-2 bg-red-500 border border-red-400 text-white rounded-full p-1.5 animate-bounce">
-              <Star className="w-4 h-4 fill-white" />
-            </div>
-          )}
+    <div className="w-full max-w-md mx-auto p-8 border-brutal-thick bg-white text-black shadow-brutal-xl relative rotate-[0.5deg]">
+      {/* Decorative Stamp badge */}
+      {isNewHighScore && (
+        <div className="absolute -top-6 -right-4 bg-[#FF7A9B] border-brutal px-3 py-1 font-black text-xs uppercase shadow-brutal-sm rotate-[12deg] flex items-center gap-1 z-10 animate-bounce">
+          <Star className="w-4 h-4 fill-black text-black" />
+          <span>New Best!</span>
         </div>
+      )}
+
+      {/* Main Title Badge */}
+      <div className="text-center mb-6">
+        <h2 className="text-4xl font-black uppercase border-brutal bg-[#FF6B6B] text-black px-6 py-2 shadow-brutal inline-block rotate-[-2deg]">
+          Game Over
+        </h2>
+        <p className="text-black text-xs font-bold uppercase tracking-widest mt-4">
+          Category: {CATEGORY_NAMES[category]}
+        </p>
       </div>
 
-      <h2 className="text-3xl font-black mb-1 bg-gradient-to-r from-red-400 via-amber-300 to-green-400 bg-clip-text text-transparent">
-        Game Over
-      </h2>
-      <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-6">
-        Category: {CATEGORY_NAMES[category]}
-      </p>
-
-      {/* Scores Panel */}
+      {/* Neubrutalist Block Score Cards */}
       <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="p-4 rounded-2xl bg-slate-800/40 border border-slate-800">
-          <span className="block text-xs font-medium text-slate-500 mb-1">Your Score</span>
-          <span className="text-4xl font-extrabold text-white">{score}</span>
+        <div className="p-4 border-brutal bg-[#FFF97A] shadow-brutal">
+          <span className="block text-[10px] font-black text-black uppercase tracking-wider mb-1">Your Score</span>
+          <span className="text-5xl font-black text-black">{score}</span>
         </div>
-        <div className="p-4 rounded-2xl bg-slate-800/40 border border-slate-800">
-          <span className="block text-xs font-medium text-slate-500 mb-1">High Score</span>
-          <span className="text-4xl font-extrabold text-amber-400 flex items-center justify-center gap-1">
-            <Trophy className="w-5 h-5 text-amber-400" />
+        <div className="p-4 border-brutal bg-[#7AFF9B] shadow-brutal">
+          <span className="block text-[10px] font-black text-black uppercase tracking-wider mb-1">High Score</span>
+          <span className="text-5xl font-black text-black flex items-center justify-center gap-1">
+            <Trophy className="w-8 h-8 text-black stroke-[2.5]" />
             {isNewHighScore ? score : highScore}
           </span>
         </div>
       </div>
 
-      {/* Title Award Card */}
-      <div className="p-5 rounded-2xl bg-slate-950/60 border border-slate-800/60 text-center mb-8">
-        <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest block mb-1">
-          Award Title
+      {/* Award Title Box */}
+      <div className="p-5 border-brutal bg-[#E5C2FF] shadow-brutal text-center mb-8 rotate-[-1deg]">
+        <span className="text-[10px] font-black text-black uppercase tracking-widest block mb-1">
+          Honorable Title Achieved
         </span>
-        <h3 className="text-xl font-black text-slate-100 mb-2">
+        <h3 className="text-2xl font-black text-black uppercase tracking-tight mb-2 border-b-2 border-black pb-1 inline-block">
           {award.title}
         </h3>
-        <p className="text-xs text-slate-400 leading-relaxed">
+        <p className="text-xs font-bold text-black leading-relaxed mt-2">
           {award.desc}
         </p>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex flex-col gap-3">
+      {/* Bold Brutalist Buttons */}
+      <div className="flex flex-col gap-4">
         <button
           onClick={onRestart}
-          className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 font-bold text-white transition-all shadow-lg shadow-orange-950/30 cursor-pointer active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 w-full py-4 border-brutal bg-[#FF931F] hover:bg-[#FFB054] font-black text-lg text-black shadow-brutal transition-all cursor-pointer active:translate-x-[3px] active:translate-y-[3px] active:shadow-brutal-sm"
         >
-          <RotateCcw className="w-5 h-5" />
-          Play Again
+          <RotateCcw className="w-5 h-5 stroke-[2.5]" />
+          PLAY AGAIN
         </button>
         <button
           onClick={onHome}
-          className="flex items-center justify-center gap-2 w-full py-4 rounded-xl border border-slate-800 bg-slate-850 hover:bg-slate-800 font-semibold text-slate-300 hover:text-white transition-all cursor-pointer active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 w-full py-4 border-brutal bg-[#7AE4FF] hover:bg-[#A9EFFF] font-black text-md text-black shadow-brutal transition-all cursor-pointer active:translate-x-[3px] active:translate-y-[3px] active:shadow-brutal-sm"
         >
-          <Home className="w-5 h-5" />
-          Categories Dashboard
+          <Home className="w-5 h-5 stroke-[2.5]" />
+          DASHBOARD HOME
         </button>
       </div>
     </div>
