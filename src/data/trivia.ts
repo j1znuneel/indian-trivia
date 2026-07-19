@@ -4,7 +4,7 @@ export interface TriviaCard {
   description: string;
   year: number;
   category: "history" | "sports" | "cinema" | "science" | "general";
-  imageUrl?: string;
+  image?: string | null;
 }
 
 export const TRIVIA_DATA: TriviaCard[] = [
