@@ -107,82 +107,83 @@ const server = serve({
     // Serve index.html for all unmatched routes.
     "/*": index,
 
-    // Proxy endpoint to query Wikidata SPARQL API
+    // Fast local API endpoint powered by pre-ingested JSON shards
     "/api/wikidata": async req => {
       const url = new URL(req.url);
       const category = url.searchParams.get("category") || "general";
 
       try {
-        const now = Date.now();
         let cards: TriviaCard[] = [];
+        const shardPath = `./src/data/shards/${category}.json`;
+        const shardFile = Bun.file(shardPath);
 
-        // 1. Check in-memory cache
-        if (cache[category] && now - cache[category].timestamp < CACHE_TTL) {
-          cards = cache[category].cards;
-          console.log(`[Cache Hit] Serving cached cards for category: ${category}`);
-        } else {
-          console.log(`[Cache Miss] Fetching from Wikidata for category: ${category}`);
-          const sparql = getSPARQLQuery(category);
-          const wikidataUrl = `https://query.wikidata.org/sparql?query=${encodeURIComponent(sparql)}&format=json`;
-          
-          const response = await fetch(wikidataUrl, {
-            headers: {
-              // Custom User-Agent per Wikidata policy
-              "User-Agent": "BharatChrono/1.0 (contact@example.com)",
-              "Accept": "application/sparql-results+json",
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error(`Wikidata SPARQL request failed: ${response.status} ${response.statusText}`);
+        // 1. Try reading from pre-ingested static JSON shard
+        if (await shardFile.exists()) {
+          const shardData = await shardFile.json();
+          if (Array.isArray(shardData) && shardData.length >= 2) {
+            cards = shardData.map((card: any) => ({
+              ...card,
+              title: maskSpoilers(card.title || ""),
+              description: maskSpoilers(card.description || "")
+            }));
+            console.log(`[Shard Hit] Served ${cards.length} cards from shard: ${shardPath}`);
           }
+        }
 
-          const json = await response.json();
-          const bindings = json.results?.bindings || [];
+        // 2. Fallback to live query or cache if shard is not present
+        if (cards.length < 2) {
+          const now = Date.now();
+          if (cache[category] && now - cache[category].timestamp < CACHE_TTL) {
+            cards = cache[category].cards;
+          } else {
+            console.log(`[Shard Miss] Fetching live from Wikidata for category: ${category}`);
+            const sparql = getSPARQLQuery(category);
+            const wikidataUrl = `https://query.wikidata.org/sparql?query=${encodeURIComponent(sparql)}&format=json`;
+            
+            const response = await fetch(wikidataUrl, {
+              headers: {
+                "User-Agent": "BharatChrono/1.0 (contact@bharatchrono.org)",
+                "Accept": "application/sparql-results+json",
+              },
+            });
 
-          // Parse and sanitize response data
-          cards = bindings
-            .map((b: any, idx: number) => {
-              const dateStr = b.date?.value;
-              const year = parseWikidataDate(dateStr);
-              const id = `wiki_${category}_${idx}_${Date.now()}`;
-              const title = maskSpoilers(b.itemLabel?.value || "");
-              const description = maskSpoilers(b.itemDescription?.value || "Historical milestone in India.");
-              const image = b.image?.value || null;
+            if (response.ok) {
+              const json = await response.json();
+              const bindings = json.results?.bindings || [];
 
-              // Filter out entities with invalid dates, empty titles, or Q-code titles
-              if (year === null || !title || /^Q\d+$/.test(title)) {
-                return null;
+              cards = bindings
+                .map((b: any, idx: number) => {
+                  const dateStr = b.date?.value;
+                  const year = parseWikidataDate(dateStr);
+                  const id = `wiki_${category}_${idx}_${Date.now()}`;
+                  const title = maskSpoilers(b.itemLabel?.value || "");
+                  const description = maskSpoilers(b.itemDescription?.value || "Historical milestone in India.");
+                  const image = b.image?.value ? `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(b.image.value.split("/").pop())}?width=400` : null;
+
+                  if (year === null || !title || /^Q\d+$/.test(title)) return null;
+
+                  return { id, title, description, year, category, image };
+                })
+                .filter((card: any) => card !== null) as TriviaCard[];
+
+              if (cards.length >= 2) {
+                cache[category] = { timestamp: now, cards };
               }
-
-              return {
-                id,
-                title,
-                description,
-                year,
-                category,
-                image
-              };
-            })
-            .filter((card: any) => card !== null) as TriviaCard[];
-
-          // Save to cache if we successfully retrieved cards
-          if (cards.length >= 2) {
-            cache[category] = { timestamp: now, cards };
+            }
           }
         }
 
         if (cards.length < 2) {
-          throw new Error("Insufficient cards returned from Wikidata");
+          throw new Error("Insufficient cards available");
         }
 
-        // Shuffle and choose 10 random cards
+        // Shuffle and select 10 random cards for the game session
         const shuffled = [...cards].sort(() => Math.random() - 0.5);
         const selected = shuffled.slice(0, 10);
 
         return Response.json(selected);
       } catch (err: any) {
-        console.error(`[Wikidata API Error]`, err);
+        console.error(`[Card Fetch Error]`, err);
         return new Response(JSON.stringify({ error: err.message }), {
           status: 500,
           headers: { "Content-Type": "application/json" }
