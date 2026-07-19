@@ -19,6 +19,7 @@ interface CategoryOption {
 
 export function CategorySelect({ onSelect, highScores }: CategorySelectProps) {
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [stepCaption, setStepCaption] = useState("1. Read the card on top of the deck.");
 
   useEffect(() => {
     if (!showHelpModal) return;
@@ -55,15 +56,17 @@ export function CategorySelect({ onSelect, highScores }: CategorySelectProps) {
         gsap.set("#demo-timeline-card", { opacity: 0, scale: 0.8 });
         gsap.set("#demo-timeline-placeholder", { opacity: 1 });
         gsap.set("#demo-timeline-card-inner", { borderColor: "black", borderWidth: "2px" });
+        setStepCaption("1. Read the card on top of the deck.");
 
         // Step 1: Fade in pointer on the deck card
         tl.to("#demo-pointer", { x: pointerStartX, y: pointerStartY, opacity: 1, duration: 0.8, ease: "power2.out" })
-          .to("#demo-step-text", { textContent: "1. Read the card on top of the deck.", duration: 0.1 })
+          .call(() => setStepCaption("1. Read the card on top of the deck."))
           .to({}, { duration: 1.2 }) // delay
           
           // Step 2: Grab the deck card and drag it to the placeholder
           .to("#demo-deck-card", { scale: 0.95, duration: 0.2 })
           .to("#demo-pointer", { scale: 0.8, duration: 0.2 }, "-=0.2")
+          .call(() => setStepCaption("2. Place it in the appropriate position."))
           .to("#demo-deck-card", {
             x: dx,
             y: dy,
@@ -76,7 +79,6 @@ export function CategorySelect({ onSelect, highScores }: CategorySelectProps) {
             duration: 1.5,
             ease: "power2.inOut"
           }, "-=1.5")
-          .to("#demo-step-text", { textContent: "2. Drag to timeline (1853 is earlier than 1947).", duration: 0.1 })
           .to({}, { duration: 1.0 }) // delay
           
           // Step 3: Drop it! Card disappears from deck slot, timeline card fades in and flashes green
@@ -85,12 +87,12 @@ export function CategorySelect({ onSelect, highScores }: CategorySelectProps) {
           .to("#demo-timeline-placeholder", { opacity: 0, duration: 0.2 }, "-=0.2")
           .to("#demo-timeline-card", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out" })
           .to("#demo-timeline-card-inner", { borderColor: "#7AFF9B", borderWidth: "3px", duration: 0.3 }) // Flash green!
-          .to("#demo-step-text", { textContent: "3. Correct! The card flips and reveals year!", duration: 0.1 })
+          .call(() => setStepCaption("3. Correct! The card flips to reveal the year."))
           .to({}, { duration: 2.8 }); // Hold at the end before repeating
       }, boardEl);
 
       return () => ctx.revert();
-    }, 100);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [showHelpModal]);
@@ -168,8 +170,8 @@ export function CategorySelect({ onSelect, highScores }: CategorySelectProps) {
               onClick={() => onSelect(cat.id)}
               className={`
                 group relative flex flex-col items-start p-6 rounded-none border-brutal-thick ${cat.bgColor}
-                transition-all duration-150 shadow-brutal hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-brutal-lg
-                active:translate-x-[3px] active:translate-y-[3px] active:shadow-brutal-sm text-left cursor-pointer
+                transition-all duration-150 shadow-brutal hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]
+                active:translate-x-[6px] active:translate-y-[6px] active:shadow-none text-left cursor-pointer
               `}
             >
               {/* Score Indicator */}
@@ -225,23 +227,26 @@ export function CategorySelect({ onSelect, highScores }: CategorySelectProps) {
             <div id="demo-board" className="relative w-full h-[400px] border-2 border-black bg-white shadow-brutal-sm overflow-hidden flex flex-col justify-between items-center py-6 px-6 mb-4 select-none">
               
               {/* Timeline slot (Top) */}
-              <div className="flex gap-4 items-center justify-center w-full mt-2">
-                {/* Slotted Card (Railway, initially hidden/placed) */}
-                <div id="demo-timeline-card" className="w-28 h-36 relative">
-                  <div id="demo-timeline-card-inner" className="w-full h-full border-2 border-black bg-[#7AE4FF] shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)] p-2 flex flex-col justify-between items-center text-center">
-                    <span className="text-[7px] font-black uppercase text-slate-500 tracking-wider">RAILWAY</span>
-                    <span className="text-[8px] font-extrabold text-black uppercase leading-tight line-clamp-2 px-1">First Train in India</span>
-                    <span className="bg-[#FFF97A] border border-black text-[9px] font-black text-black px-1.5 py-0.5 shadow-[1px_1px_0px_rgba(0,0,0,1)] mt-1">1853 CE</span>
+              <div className="flex gap-8 items-center justify-center w-full mt-2">
+                {/* Slotted Card and Target Placeholder overlapping in a relative container */}
+                <div className="relative w-28 h-36 flex-shrink-0">
+                  {/* Slotted Card (Railway, initially hidden/placed) */}
+                  <div id="demo-timeline-card" className="absolute inset-0">
+                    <div id="demo-timeline-card-inner" className="w-full h-full border-2 border-black bg-[#7AE4FF] shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)] p-2 flex flex-col justify-between items-center text-center">
+                      <span className="text-[7px] font-black uppercase text-slate-500 tracking-wider">RAILWAY</span>
+                      <span className="text-[8px] font-extrabold text-black uppercase leading-tight line-clamp-2 px-1">First Train in India</span>
+                      <span className="bg-[#FFF97A] border border-black text-[9px] font-black text-black px-1.5 py-0.5 shadow-[1px_1px_0px_rgba(0,0,0,1)] mt-1">1853 CE</span>
+                    </div>
+                  </div>
+
+                  {/* Target Placeholder */}
+                  <div id="demo-timeline-placeholder" className="absolute inset-0 border-2 border-dashed border-black/35 bg-slate-50 flex flex-col justify-center items-center text-center p-2">
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">DROP PLACE</span>
                   </div>
                 </div>
 
-                {/* Target Placeholder */}
-                <div id="demo-timeline-placeholder" className="w-28 h-36 border-2 border-dashed border-black/35 bg-slate-50 flex flex-col justify-center items-center text-center p-2">
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">DROP PLACE</span>
-                </div>
-
                 {/* Base Card (Independence) */}
-                <div className="w-28 h-36 border-2 border-black bg-[#FFBE7A] shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)] p-2 flex flex-col justify-between items-center text-center">
+                <div className="w-28 h-36 border-2 border-black bg-[#FFBE7A] shadow-[2.5px_2.5px_0px_rgba(0,0,0,1)] p-2 flex flex-col justify-between items-center text-center flex-shrink-0">
                   <span className="text-[7px] font-black uppercase text-slate-500 tracking-wider">HISTORY</span>
                   <span className="text-[8px] font-extrabold text-black uppercase leading-tight line-clamp-2 px-1">Indian Independence</span>
                   <span className="bg-[#FFF97A] border border-black text-[9px] font-black text-black px-1.5 py-0.5 shadow-[1px_1px_0px_rgba(0,0,0,1)] mt-1">1947 CE</span>
@@ -270,7 +275,7 @@ export function CategorySelect({ onSelect, highScores }: CategorySelectProps) {
             {/* Instruction Step Text */}
             <div className="w-full text-center border-2 border-black bg-white text-black p-3 shadow-brutal-sm">
               <p id="demo-step-text" className="text-xs font-bold uppercase tracking-wide">
-                1. Read the card on top of the deck.
+                {stepCaption}
               </p>
             </div>
           </div>

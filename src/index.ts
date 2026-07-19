@@ -9,6 +9,7 @@ interface TriviaCard {
   description: string;
   year: number;
   category: string;
+  image?: string | null;
 }
 
 interface CacheEntry {
@@ -55,6 +56,29 @@ function getWikimediaThumbnail(imageFilePathUrl: string, width = 250): string | 
   }
 }
 
+async function getWikipediaPoster(articleTitle: string): Promise<string | null> {
+  try {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=thumbnail&pithumbsize=400&titles=${encodeURIComponent(articleTitle)}&origin=*`;
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "BharatChrono/1.0 (contact@bharatchrono.org)"
+      }
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const pages = json.query?.pages;
+    if (!pages) return null;
+    
+    const pageId = Object.keys(pages)[0];
+    if (pageId === "-1") return null; // page not found
+    
+    return pages[pageId]?.thumbnail?.source || null;
+  } catch (err) {
+    console.error(`Failed to fetch Wikipedia poster for ${articleTitle}`, err);
+    return null;
+  }
+}
+
 function getSPARQLQuery(category: string): string {
   switch (category) {
     case "sports":
@@ -64,7 +88,7 @@ function getSPARQLQuery(category: string): string {
             ?item wdt:P17 wd:Q668.
             ?item wdt:P641 ?sport.
             ?item wdt:P585 ?date.
-          } LIMIT 50
+          } LIMIT 150
         }
         OPTIONAL { ?item wdt:P18 ?image }
         SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
@@ -82,21 +106,26 @@ function getSPARQLQuery(category: string): string {
               ?loc wdt:P17 wd:Q668.     # country: India
               ?item wdt:P585 ?date.
             }
-          } LIMIT 50
+          } LIMIT 150
         }
         OPTIONAL { ?item wdt:P18 ?image }
         SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
       }`;
     case "cinema":
-      return `SELECT ?item ?itemLabel ?itemDescription ?date ?image WHERE {
+      return `SELECT ?item ?itemLabel ?itemDescription ?date ?image ?articleTitle WHERE {
         {
           SELECT DISTINCT ?item ?date WHERE {
             ?item wdt:P31 wd:Q11424.
             ?item wdt:P495 wd:Q668.
             ?item wdt:P577 ?date.
-          } LIMIT 50
+          } LIMIT 150
         }
         OPTIONAL { ?item wdt:P18 ?image }
+        OPTIONAL {
+          ?sitelink schema:about ?item;
+                    schema:isPartOf <https://en.wikipedia.org/>;
+                    schema:name ?articleTitle.
+        }
         SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
       }`;
     case "science":
@@ -107,7 +136,7 @@ function getSPARQLQuery(category: string): string {
             VALUES ?type { wd:Q3918 wd:Q1205341 wd:Q35257 } # university, research institute, observatory
             ?item wdt:P17 wd:Q668.
             ?item wdt:P571 ?date.
-          } LIMIT 50
+          } LIMIT 150
         }
         OPTIONAL { ?item wdt:P18 ?image }
         SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
@@ -120,7 +149,7 @@ function getSPARQLQuery(category: string): string {
             ?item wdt:P31 ?type.
             VALUES ?type { wd:Q44539 wd:Q12280 } # temple, bridge
             ?item wdt:P571 ?date.
-          } LIMIT 50
+          } LIMIT 150
         }
         OPTIONAL { ?item wdt:P18 ?image }
         SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
@@ -173,31 +202,52 @@ const server = serve({
               },
             });
 
-          // Parse and sanitize response data
-          cards = bindings
-            .map((b: any, idx: number) => {
-              const dateStr = b.date?.value;
-              const year = parseWikidataDate(dateStr);
-              const id = `wiki_${category}_${idx}_${Date.now()}`;
-              const title = maskSpoilers(b.itemLabel?.value || "");
-              const description = maskSpoilers(b.itemDescription?.value || "Historical milestone in India.");
-              const rawImage = b.image?.value || null;
-              const image = rawImage ? getWikimediaThumbnail(rawImage, 250) : null;
+            if (response.ok) {
+              const json = await response.json();
+              const bindings = json.results?.bindings || [];
 
-              cards = bindings
+              const rawCards = bindings
                 .map((b: any, idx: number) => {
                   const dateStr = b.date?.value;
                   const year = parseWikidataDate(dateStr);
                   const id = `wiki_${category}_${idx}_${Date.now()}`;
                   const title = maskSpoilers(b.itemLabel?.value || "");
                   const description = maskSpoilers(b.itemDescription?.value || "Historical milestone in India.");
-                  const image = b.image?.value ? `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(b.image.value.split("/").pop())}?width=400` : null;
+                  const rawImage = b.image?.value || null;
+                  const image = rawImage ? getWikimediaThumbnail(rawImage, 250) : null;
+                  const articleTitle = b.articleTitle?.value || null;
 
                   if (year === null || !title || /^Q\d+$/.test(title)) return null;
 
-                  return { id, title, description, year, category, image };
+                  return { id, title, description, year, category, image, articleTitle };
                 })
-                .filter((card: any) => card !== null) as TriviaCard[];
+                .filter((card: any) => card !== null) as (TriviaCard & { articleTitle: string | null })[];
+
+              // Fetch Wikipedia posters in parallel for cinema cards that have no image but have articleTitle
+              if (category === "cinema") {
+                const posterPromises = rawCards.map(async (card) => {
+                  if (!card.image && card.articleTitle) {
+                    const poster = await getWikipediaPoster(card.articleTitle);
+                    if (poster) {
+                      card.image = poster;
+                    }
+                  }
+                  const { articleTitle, ...rest } = card;
+                  return rest as TriviaCard;
+                });
+                cards = await Promise.all(posterPromises);
+              } else {
+                cards = rawCards.map(({ articleTitle, ...rest }) => rest as TriviaCard);
+              }
+
+              // Deduplicate cards by title
+              const seen = new Set<string>();
+              cards = cards.filter(card => {
+                const normalized = card.title.trim().toLowerCase();
+                if (seen.has(normalized)) return false;
+                seen.add(normalized);
+                return true;
+              });
 
               if (cards.length >= 2) {
                 cache[category] = { timestamp: now, cards };
@@ -210,11 +260,10 @@ const server = serve({
           throw new Error("Insufficient cards available");
         }
 
-        // Shuffle and select 10 random cards for the game session
+        // Shuffle and return all cards for the infinite game session
         const shuffled = [...cards].sort(() => Math.random() - 0.5);
-        const selected = shuffled.slice(0, 10);
 
-        return Response.json(selected);
+        return Response.json(shuffled);
       } catch (err: any) {
         console.error(`[Card Fetch Error]`, err);
         return new Response(JSON.stringify({ error: err.message }), {

@@ -66,9 +66,10 @@ export function TriviaCard({
   const [hoverFlipped, setHoverFlipped] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const canHoverFlip = revealed && !isCurrent && !isHoverDisabled;
-
   const isFaceAActive = (canHoverFlip && hoverFlipped) || !isFlipped;
   const isFaceBActive = !isFaceAActive;
+
+
 
   useEffect(() => {
     if (skipInitialFlip) {
@@ -97,7 +98,7 @@ export function TriviaCard({
 
   const renderCardImage = (face: "A" | "B") => {
     if (!card.image) return null;
-    const heightClass = face === "A" ? "h-[110px]" : "h-[54px]";
+    const heightClass = face === "A" ? "h-[120px]" : "h-[75px]";
     return (
       <div className={`relative w-full ${heightClass} border border-black bg-[#FFEBD6] flex-shrink-0 my-1 overflow-hidden select-none`}>
         {!imageLoaded && (
@@ -151,26 +152,27 @@ export function TriviaCard({
         >
           {/* ================= FACE A: CLUE FACE (Front) ================= */}
           <div 
-            className={`absolute inset-0 backface-hidden border-[3px] border-black p-4 flex flex-col justify-between rounded-none bg-[#FFE885] ${
-              isFaceAActive ? "shadow-brutal" : ""
-            }`}
+            className="absolute inset-0 backface-hidden rounded-none"
           >
-            {/* Header Spacer */}
-            <div className="w-full h-4" />
-
-            {/* Clue Text (Title and Image Only) */}
-            <div className="flex-1 flex flex-col justify-center items-center py-2 text-center select-none overflow-hidden">
-              <h4 className="text-sm font-black text-black uppercase leading-tight tracking-tight mb-2">
-                {card.title}
-              </h4>
+            <div className={`w-full h-full border-[3px] border-black p-3 flex flex-col justify-start rounded-none bg-[#FFE885] ${
+              isFaceAActive && !isCurrent ? "shadow-brutal" : ""
+            }`}>
+              {/* Image at the top, same padding top and x axes */}
               {renderCardImage("A")}
-            </div>
 
-            {/* Footer */}
-            <div className="w-full flex justify-center mt-2 border-t-[1.5px] border-black pt-1.5">
-              <span className="text-[9px] font-extrabold text-black uppercase tracking-wider bg-white border border-black px-2 py-0.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
-                {isCurrent ? "SORT ME!" : "BHARAT TRIVIA"}
-              </span>
+              {/* Title */}
+              <div className="flex-1 flex flex-col justify-center items-center py-2 text-center select-none overflow-hidden">
+                <h4 className="text-xs font-black text-black uppercase leading-snug tracking-tight line-clamp-3">
+                  {card.title}
+                </h4>
+              </div>
+
+              {/* Footer */}
+              <div className="w-full flex justify-center mt-auto border-t-[1.5px] border-black pt-1.5 flex-shrink-0">
+                <span className="text-[9px] font-extrabold text-black uppercase tracking-wider bg-white border border-black px-2 py-0.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                  {isCurrent ? "SORT ME!" : "BHARAT TRIVIA"}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -179,38 +181,37 @@ export function TriviaCard({
             className="absolute inset-0 backface-hidden rotate-y-180 rounded-none"
           >
             {revealed ? (
-              /* Revealed Year Face (Year, Title, Description) */
-              <div className={`w-full h-full border-[3px] border-black p-4 flex flex-col justify-between rounded-none ${theme.bg} ${
-                isFaceBActive ? "shadow-brutal" : ""
+              /* Revealed Year Face (Image, Title, Description, Year) */
+              <div className={`w-full h-full border-[3px] border-black p-3 flex flex-col justify-start rounded-none ${theme.bg} ${
+                isFaceBActive && !isCurrent ? "shadow-brutal" : ""
               }`}>
-                {/* Header Spacer */}
-                <div className="w-full h-4" />
+                {/* Image at the top, same padding top and x axes */}
+                {renderCardImage("B")}
 
-                {/* Year Value */}
-                <div className="flex-1 flex flex-col justify-center items-center text-center py-1 select-none">
-                  <div className={`border-[2px] border-black px-2 py-0.5 text-xs font-black text-black uppercase tracking-wide flex items-center gap-1.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] ${
+                {/* Title */}
+                <h4 className="mt-2 text-[10px] font-black text-black uppercase leading-tight line-clamp-2 text-center select-none">
+                  {card.title}
+                </h4>
+
+                {/* Description */}
+                <p className="mt-1.5 text-[8px] font-semibold text-black/80 leading-snug line-clamp-3 text-center italic select-none">
+                  {card.description}
+                </p>
+
+                {/* Year Value at the bottom */}
+                <div className="mt-auto pt-2 flex justify-center select-none">
+                  <div className={`border-[2px] border-black px-2.5 py-0.5 text-[10px] font-black text-black uppercase tracking-wide flex items-center gap-1 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] ${
                     isIncorrect ? "bg-[#FF6B6B]" : "bg-[#FFF97A]"
                   }`}>
                     <Calendar className="w-3 h-3 text-black stroke-[2.5]" />
                     {formatYear(card.year)}
                   </div>
-                  {renderCardImage("B")}
-                  <h4 className="mt-1 text-[10px] font-black text-black uppercase leading-tight line-clamp-2 px-1">
-                    {card.title}
-                  </h4>
-                </div>
-
-                {/* Description */}
-                <div className="w-full flex justify-center mt-2 border-t-[1.5px] border-black pt-1.5">
-                  <p className="text-[8px] font-semibold text-black leading-tight line-clamp-2 text-center italic">
-                    {card.description}
-                  </p>
                 </div>
               </div>
             ) : (
               /* Card Back Design (Draw Pile Style) */
               <div className={`w-full h-full border-[3px] border-black rounded-none bg-card-back flex flex-col justify-center items-center p-4 ${
-                isFaceBActive ? "shadow-brutal" : ""
+                isFaceBActive && !isCurrent ? "shadow-brutal" : ""
               }`}>
                 <div className="w-16 h-16 rounded-full border-[3px] border-black bg-[#FFF97A] flex items-center justify-center shadow-brutal-sm rotate-[-6deg] animate-pulse">
                   <span className="text-3xl font-black text-black">?</span>

@@ -19,13 +19,51 @@ const CATEGORY_NAMES: Record<Category, string> = {
 
 export function GameOver({ score, highScore, category, onRestart, onHome }: GameOverProps) {
   const getAwardTitle = (s: number) => {
-    if (s <= 2) return { title: "Panchayat Member", desc: "A humble start. Take a walk through history and try again!" };
-    if (s <= 5) return { title: "Royal Court Advisor", desc: "Impressive! You know your way around major historical milestones." };
-    if (s <= 9) return { title: "Grand Minister (Mahamatya)", desc: "Brilliant! Chanakya would be proud of your tactical historical ordering." };
-    return { title: "Chakravartin Samrat", desc: "Phenomenal! You are the absolute Emperor of Time and Bharat's history!" };
+    if (s <= 2) {
+      return { 
+        title: "Anonymous IP Editor", 
+        desc: "A humble start. Take a walk through history, verify some references, and try again!" 
+      };
+    }
+    if (s <= 5) {
+      return { 
+        title: "Stub Creator", 
+        desc: "Good start! You've successfully added stub entries to the timeline. Keep editing!" 
+      };
+    }
+    if (s <= 10) {
+      return { 
+        title: "Wiki Citation Editor", 
+        desc: "Excellent precision! You check the facts and add high-quality citations to history." 
+      };
+    }
+    if (s <= 18) {
+      return { 
+        title: "Wiki Wiki Master", 
+        desc: "Fast, accurate, and prolific editor! You shape the timeline entries with absolute confidence." 
+      };
+    }
+    if (s <= 29) {
+      return { 
+        title: "Administrator (Sysop)", 
+        desc: "Outstanding intellect! You safeguard the timeline from historical vandalism. Chanakya level knowledge!" 
+      };
+    }
+    return { 
+      title: "Jimmy Wales Envoy", 
+      desc: "Founder-level encyclopedic wisdom! You practically wrote the history pages yourself!" 
+    };
+  };
+
+  const getHeaderText = (s: number) => {
+    if (s <= 5) return { text: "Game Over", bg: "bg-[#FF6B6B]" };
+    if (s <= 15) return { text: "Good Effort!", bg: "bg-[#FFF97A]" };
+    if (s <= 29) return { text: "Impressive!", bg: "bg-[#E5C2FF]" };
+    return { text: "Wiki Legend!", bg: "bg-[#7AFF9B]" };
   };
 
   const award = getAwardTitle(score);
+  const header = getHeaderText(score);
   const isNewHighScore = score > 0 && score >= highScore;
 
   return (
@@ -40,8 +78,8 @@ export function GameOver({ score, highScore, category, onRestart, onHome }: Game
 
       {/* Main Title Badge */}
       <div className="text-center mb-6">
-        <h2 className="text-4xl font-black uppercase border-brutal bg-[#FF6B6B] text-black px-6 py-2 shadow-brutal inline-block rotate-[-2deg]">
-          Game Over
+        <h2 className={`text-4xl font-black uppercase border-brutal ${header.bg} text-black px-6 py-2 shadow-brutal inline-block rotate-[-2deg]`}>
+          {header.text}
         </h2>
         <p className="text-black text-xs font-bold uppercase tracking-widest mt-4">
           Category: {CATEGORY_NAMES[category]}

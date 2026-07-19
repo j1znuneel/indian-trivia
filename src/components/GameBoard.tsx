@@ -523,7 +523,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
           {/* Timeline Scroll Buttons */}
           <button
             onClick={() => scrollTimeline("left")}
-            className="absolute left-2 z-20 p-3 border-2 border-black bg-[#FFF97A] hover:bg-[#FFFBA9] text-black shadow-brutal hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer hidden md:flex"
+            className="absolute left-4 z-20 p-3 border-2 border-black bg-[#FFF97A] hover:bg-[#FFFBA9] text-black shadow-brutal hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer hidden md:flex"
           >
             <ChevronLeft className="w-6 h-6 stroke-[2.5]" />
           </button>
@@ -531,10 +531,11 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
           {/* Scrolling timeline container */}
           <div
             ref={timelineContainerRef}
-            className={`w-full max-w-5xl overflow-x-auto no-scrollbar py-8 flex items-center px-12 snap-x ${
+            className={`w-full overflow-x-auto no-scrollbar py-8 flex items-center px-16 snap-x ${
               isAnimating ? "pointer-events-none" : ""
             }`}
           >
+            <div className="flex items-center justify-center mx-auto min-w-max">
             {/* Timeline Base Placeholder (for GSAP deal flight targeting) */}
             {!showBaseCard && (
               <div 
@@ -629,11 +630,12 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                 </div>
               </>
             )}
+            </div>
           </div>
 
           <button
             onClick={() => scrollTimeline("right")}
-            className="absolute right-2 z-20 p-3 border-2 border-black bg-[#FFF97A] hover:bg-[#FFFBA9] text-black shadow-brutal hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer hidden md:flex"
+            className="absolute right-4 z-20 p-3 border-2 border-black bg-[#FFF97A] hover:bg-[#FFFBA9] text-black shadow-brutal hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer hidden md:flex"
           >
             <ChevronRight className="w-6 h-6 stroke-[2.5]" />
           </button>
