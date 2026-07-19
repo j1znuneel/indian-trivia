@@ -1,6 +1,7 @@
 import { serve } from "bun";
 import index from "./index.html";
 import { maskSpoilers } from "./lib/utils";
+import { createHash } from "crypto";
 
 interface TriviaCard {
   id: string;
@@ -27,6 +28,31 @@ function parseWikidataDate(dateStr: string): number | null {
     return parseInt(match[1], 10);
   }
   return null;
+}
+function getWikimediaThumbnail(imageFilePathUrl: string, width = 250): string | null {
+  if (!imageFilePathUrl) return null;
+  
+  const prefix = "Special:FilePath/";
+  const index = imageFilePathUrl.indexOf(prefix);
+  if (index === -1) return imageFilePathUrl;
+  
+  const encodedFilename = imageFilePathUrl.substring(index + prefix.length);
+  const filename = decodeURIComponent(encodedFilename).replace(/ /g, "_");
+  
+  try {
+    const hash = createHash("md5").update(filename).digest("hex");
+    const h1 = hash.substring(0, 1);
+    const h2 = hash.substring(0, 2);
+    
+    const cleanFilename = encodeURIComponent(filename);
+    const isSvg = filename.toLowerCase().endsWith(".svg");
+    const suffix = isSvg ? ".png" : "";
+    
+    return `https://upload.wikimedia.org/wikipedia/commons/thumb/${h1}/${h2}/${cleanFilename}/${width}px-${cleanFilename}${suffix}`;
+  } catch (err) {
+    console.error("Failed to generate Wikimedia thumbnail hash", err);
+    return imageFilePathUrl; // fallback
+  }
 }
 
 function getSPARQLQuery(category: string): string {
@@ -148,7 +174,8 @@ const server = serve({
               const id = `wiki_${category}_${idx}_${Date.now()}`;
               const title = maskSpoilers(b.itemLabel?.value || "");
               const description = maskSpoilers(b.itemDescription?.value || "Historical milestone in India.");
-              const image = b.image?.value || null;
+              const rawImage = b.image?.value || null;
+              const image = rawImage ? getWikimediaThumbnail(rawImage, 250) : null;
 
               // Filter out entities with invalid dates, empty titles, or Q-code titles
               if (year === null || !title || /^Q\d+$/.test(title)) {

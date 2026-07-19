@@ -81,10 +81,11 @@ export function TriviaCard({
       setIsFlipped(revealed ? true : false);
     }, 450);
     return () => clearTimeout(timer);
-  }, [revealed, card.id, skipInitialFlip]);
+  }, [revealed, card.id]);
 
   useEffect(() => {
     setImageLoaded(false);
+    setHoverFlipped(false);
   }, [card.id]);
 
   const formatYear = (year: number) => {
@@ -94,10 +95,11 @@ export function TriviaCard({
     return `${year} CE`;
   };
 
-  const renderCardImage = () => {
+  const renderCardImage = (face: "A" | "B") => {
     if (!card.image) return null;
+    const heightClass = face === "A" ? "h-[110px]" : "h-[54px]";
     return (
-      <div className="relative w-full h-[64px] border border-black bg-[#FFEBD6] flex-shrink-0 my-1 overflow-hidden select-none">
+      <div className={`relative w-full ${heightClass} border border-black bg-[#FFEBD6] flex-shrink-0 my-1 overflow-hidden select-none`}>
         {!imageLoaded && (
           <div className="absolute inset-0 bg-[#EAD4BA] animate-pulse flex items-center justify-center">
             <span className="text-[8px] font-black uppercase text-slate-600 tracking-wider">Loading...</span>
@@ -106,6 +108,11 @@ export function TriviaCard({
         <img
           src={card.image}
           alt={card.title}
+          ref={(el) => {
+            if (el && el.complete && !imageLoaded) {
+              setTimeout(() => setImageLoaded(true), 0);
+            }
+          }}
           onLoad={() => setImageLoaded(true)}
           className={`w-full h-full object-cover transition-opacity duration-300 ${
             imageLoaded ? "opacity-100" : "opacity-0 absolute"
@@ -115,107 +122,106 @@ export function TriviaCard({
     );
   };
 
+
+
   return (
-    <div
-      draggable={isCurrent}
-      onDragStart={isCurrent ? onDragStart : undefined}
-      onDragEnd={isCurrent ? onDragEnd : undefined}
-      onClick={onClick}
-      onMouseEnter={canHoverFlip ? () => setHoverFlipped(true) : undefined}
-      onMouseLeave={canHoverFlip ? () => setHoverFlipped(false) : undefined}
-      className={`
-        relative w-44 h-60 perspective-1000 select-none rounded-none
-        ${isCurrent ? "cursor-grab active:cursor-grabbing hover:scale-[1.02]" : ""}
-        ${isDragging ? "opacity-30 scale-95" : "opacity-100"}
-        ${isCurrent && isSelected ? "ring-4 ring-black translate-x-[2px] translate-y-[2px]" : ""}
-        transition-all duration-200 ease-out
-      `}
-    >
-      {/* 3D Rotating Wrapper */}
-      <div 
-        className="relative w-full h-full preserve-3d transition-transform duration-500 ease-out"
-        style={{
-          transform: canHoverFlip && hoverFlipped
-            ? "rotateY(0deg)"
-            : (isFlipped ? "rotateY(180deg)" : "rotateY(0deg)"),
-        }}
+      <div
+        draggable={isCurrent}
+        onDragStart={isCurrent ? onDragStart : undefined}
+        onDragEnd={isCurrent ? onDragEnd : undefined}
+        onClick={isCurrent ? onClick : undefined}
+        onMouseEnter={canHoverFlip ? () => setHoverFlipped(true) : undefined}
+        onMouseLeave={canHoverFlip ? () => setHoverFlipped(false) : undefined}
+        className={`
+          relative w-44 h-60 perspective-1000 select-none rounded-none cursor-pointer
+          ${isCurrent ? "cursor-grab active:cursor-grabbing hover:scale-[1.02]" : ""}
+          ${isDragging ? "opacity-30 scale-95" : "opacity-100"}
+          ${isCurrent && isSelected ? "ring-4 ring-black translate-x-[2px] translate-y-[2px]" : ""}
+          transition-all duration-200 ease-out
+        `}
       >
-        {/* ================= FACE A: CLUE FACE (Front) ================= */}
+        {/* 3D Rotating Wrapper */}
         <div 
-          className={`absolute inset-0 backface-hidden border-[3px] border-black p-4 flex flex-col justify-between rounded-none bg-[#FFE885] ${
-            isFaceAActive ? "shadow-brutal" : ""
-          }`}
+          className="relative w-full h-full preserve-3d transition-transform duration-500 ease-out"
+          style={{
+            transform: canHoverFlip && hoverFlipped
+              ? "rotateY(0deg)"
+              : (isFlipped ? "rotateY(180deg)" : "rotateY(0deg)"),
+          }}
         >
-          {/* Header Spacer */}
-          <div className="w-full h-4" />
+          {/* ================= FACE A: CLUE FACE (Front) ================= */}
+          <div 
+            className={`absolute inset-0 backface-hidden border-[3px] border-black p-4 flex flex-col justify-between rounded-none bg-[#FFE885] ${
+              isFaceAActive ? "shadow-brutal" : ""
+            }`}
+          >
+            {/* Header Spacer */}
+            <div className="w-full h-4" />
 
-          {/* Clue Text */}
-          <div className="flex-1 flex flex-col justify-center py-1 text-center select-none overflow-hidden">
-            <h4 className="text-xs font-black text-black uppercase leading-tight tracking-tight mb-1">
-              {card.title}
-            </h4>
-            {renderCardImage()}
-            <p className="text-[9px] text-black font-semibold leading-normal line-clamp-3 bg-white border border-black/35 p-1 shadow-[1.5px_1.5px_0px_rgba(0,0,0,0.15)] overflow-hidden">
-              {card.description}
-            </p>
+            {/* Clue Text (Title and Image Only) */}
+            <div className="flex-1 flex flex-col justify-center items-center py-2 text-center select-none overflow-hidden">
+              <h4 className="text-sm font-black text-black uppercase leading-tight tracking-tight mb-2">
+                {card.title}
+              </h4>
+              {renderCardImage("A")}
+            </div>
+
+            {/* Footer */}
+            <div className="w-full flex justify-center mt-2 border-t-[1.5px] border-black pt-1.5">
+              <span className="text-[9px] font-extrabold text-black uppercase tracking-wider bg-white border border-black px-2 py-0.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                {isCurrent ? "SORT ME!" : "BHARAT TRIVIA"}
+              </span>
+            </div>
           </div>
 
-          {/* Footer */}
-          <div className="w-full flex justify-center mt-2 border-t-[1.5px] border-black pt-1.5">
-            <span className="text-[9px] font-extrabold text-black uppercase tracking-wider bg-white border border-black px-2 py-0.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
-              {isCurrent ? "SORT ME!" : "BHARAT TRIVIA"}
-            </span>
-          </div>
-        </div>
+          {/* ================= FACE B: BACK FACE (Card Back OR Year Face) ================= */}
+          <div 
+            className="absolute inset-0 backface-hidden rotate-y-180 rounded-none"
+          >
+            {revealed ? (
+              /* Revealed Year Face (Year, Title, Description) */
+              <div className={`w-full h-full border-[3px] border-black p-4 flex flex-col justify-between rounded-none ${theme.bg} ${
+                isFaceBActive ? "shadow-brutal" : ""
+              }`}>
+                {/* Header Spacer */}
+                <div className="w-full h-4" />
 
-        {/* ================= FACE B: BACK FACE (Card Back OR Year Face) ================= */}
-        <div 
-          className="absolute inset-0 backface-hidden rotate-y-180 rounded-none"
-        >
-          {revealed ? (
-            /* Revealed Year Face */
-            <div className={`w-full h-full border-[3px] border-black p-4 flex flex-col justify-between rounded-none ${theme.bg} ${
-              isFaceBActive ? "shadow-brutal" : ""
-            }`}>
-              {/* Header Spacer */}
-              <div className="w-full h-4" />
-
-              {/* Year Value */}
-              <div className="flex-1 flex flex-col justify-center items-center text-center py-1 select-none">
-                <div className={`border-[2px] border-black px-2 py-0.5 text-xs font-black text-black uppercase tracking-wide flex items-center gap-1.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] ${
-                  isIncorrect ? "bg-[#FF6B6B]" : "bg-[#FFF97A]"
-                }`}>
-                  <Calendar className="w-3 h-3 text-black stroke-[2.5]" />
-                  {formatYear(card.year)}
+                {/* Year Value */}
+                <div className="flex-1 flex flex-col justify-center items-center text-center py-1 select-none">
+                  <div className={`border-[2px] border-black px-2 py-0.5 text-xs font-black text-black uppercase tracking-wide flex items-center gap-1.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] ${
+                    isIncorrect ? "bg-[#FF6B6B]" : "bg-[#FFF97A]"
+                  }`}>
+                    <Calendar className="w-3 h-3 text-black stroke-[2.5]" />
+                    {formatYear(card.year)}
+                  </div>
+                  {renderCardImage("B")}
+                  <h4 className="mt-1 text-[10px] font-black text-black uppercase leading-tight line-clamp-2 px-1">
+                    {card.title}
+                  </h4>
                 </div>
-                {renderCardImage()}
-                <h4 className="mt-1 text-[10px] font-black text-black uppercase leading-tight line-clamp-2 px-1">
-                  {card.title}
-                </h4>
-              </div>
 
-              {/* Description */}
-              <div className="w-full flex justify-center mt-2 border-t-[1.5px] border-black pt-1.5">
-                <p className="text-[8px] font-semibold text-black leading-tight line-clamp-2 text-center italic">
-                  {card.description}
-                </p>
+                {/* Description */}
+                <div className="w-full flex justify-center mt-2 border-t-[1.5px] border-black pt-1.5">
+                  <p className="text-[8px] font-semibold text-black leading-tight line-clamp-2 text-center italic">
+                    {card.description}
+                  </p>
+                </div>
               </div>
-            </div>
-          ) : (
-            /* Card Back Design (Draw Pile Style) */
-            <div className={`w-full h-full border-[3px] border-black rounded-none bg-card-back flex flex-col justify-center items-center p-4 ${
-              isFaceBActive ? "shadow-brutal" : ""
-            }`}>
-              <div className="w-16 h-16 rounded-full border-[3px] border-black bg-[#FFF97A] flex items-center justify-center shadow-brutal-sm rotate-[-6deg] animate-pulse">
-                <span className="text-3xl font-black text-black">?</span>
+            ) : (
+              /* Card Back Design (Draw Pile Style) */
+              <div className={`w-full h-full border-[3px] border-black rounded-none bg-card-back flex flex-col justify-center items-center p-4 ${
+                isFaceBActive ? "shadow-brutal" : ""
+              }`}>
+                <div className="w-16 h-16 rounded-full border-[3px] border-black bg-[#FFF97A] flex items-center justify-center shadow-brutal-sm rotate-[-6deg] animate-pulse">
+                  <span className="text-3xl font-black text-black">?</span>
+                </div>
+                <div className="mt-6 border-2 border-black bg-white px-3 py-1 shadow-brutal-sm rotate-[3deg]">
+                  <span className="text-[9px] font-black text-black uppercase tracking-widest">BHARAT CHRONO</span>
+                </div>
               </div>
-              <div className="mt-6 border-2 border-black bg-white px-3 py-1 shadow-brutal-sm rotate-[3deg]">
-                <span className="text-[9px] font-black text-black uppercase tracking-widest">BHARAT CHRONO</span>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-    </div>
   );
 }

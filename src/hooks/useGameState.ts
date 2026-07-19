@@ -250,6 +250,7 @@ export function useGameState() {
     status,
     category,
     timeline,
+    deck,
     currentCard,
     score,
     lives,
