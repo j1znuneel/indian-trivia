@@ -28,6 +28,7 @@ const CATEGORY_HEADER_BG: Record<Category, string> = {
 export function GameBoard({ category, gameState }: GameBoardProps) {
   const {
     timeline,
+    deck,
     currentCard,
     score,
     lives,
@@ -66,6 +67,28 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
   const boardRef = useRef<HTMLDivElement>(null);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
   const isFirstCardRef = useRef(true);
+
+  // Background image prefetch hook to prevent skeleton load flicker
+  useEffect(() => {
+    const urls: string[] = [];
+    if (currentCard?.image) {
+      urls.push(currentCard.image);
+    }
+    timeline.forEach(card => {
+      if (card.image) urls.push(card.image);
+    });
+    if (deck) {
+      deck.forEach(card => {
+        if (card.image) urls.push(card.image);
+      });
+    }
+
+    const uniqueUrls = Array.from(new Set(urls));
+    uniqueUrls.forEach(url => {
+      const img = new Image();
+      img.src = url;
+    });
+  }, [timeline, deck, currentCard?.id]);
 
   // 1. Initial mount dealing sequence using global DealAnimationLayer
   useEffect(() => {
@@ -314,47 +337,55 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
 
   // Animates card shifting from wrong dropped index to correct timeline index (FLIP animation)
   const animateCardGlide = (cardId: string, toIndex: number) => {
-    const cardEl = document.getElementById(`timeline-item-${cardId}`);
-    if (!cardEl) {
-      // Fallback: move in state immediately
-      gameState.moveTimelineCard(cardId, toIndex);
-      return;
-    }
+    // 1. FIRST: Measure visual bounding box for ALL existing timeline cards
+    const items = timeline.map(c => ({
+      id: c.id,
+      el: document.getElementById(`timeline-item-${c.id}`)
+    }));
 
-    // 1. FIRST: Measure visual bounding box at wrong position
-    const firstRect = cardEl.getBoundingClientRect();
+    const firstPositions = items.map(item => {
+      if (!item.el) return { id: item.id, rect: null };
+      return {
+        id: item.id,
+        rect: item.el.getBoundingClientRect()
+      };
+    });
 
     // 2. State shift: Move card to correct index in timeline
     gameState.moveTimelineCard(cardId, toIndex);
 
-    // 3. In next layout pass, measure new position and animate offset delta back to 0,0
+    // 3. In next layout pass, measure new positions of all cards and animate their offsets back to 0,0
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        const newCardEl = document.getElementById(`timeline-item-${cardId}`);
-        if (!newCardEl) return;
+        timeline.forEach(c => {
+          const el = document.getElementById(`timeline-item-${c.id}`);
+          if (!el) return;
 
-        // LAST: Measure visual bounding box at correct position
-        const lastRect = newCardEl.getBoundingClientRect();
+          const firstPos = firstPositions.find(p => p.id === c.id);
+          if (!firstPos || !firstPos.rect) return;
 
-        // INVERT: Calculate position difference
-        const dx = firstRect.left - lastRect.left;
-        const dy = firstRect.top - lastRect.top;
+          const lastRect = el.getBoundingClientRect();
+          const dx = firstPos.rect.left - lastRect.left;
+          const dy = firstPos.rect.top - lastRect.top;
 
-        // PLAY: Animate using GSAP
-        gsap.killTweensOf(newCardEl);
-        gsap.fromTo(newCardEl,
-          {
-            x: dx,
-            y: dy
-          },
-          {
-            x: 0,
-            y: 0,
-            duration: 0.8,
-            ease: "power2.out",
-            clearProps: "transform"
+          // If there is any positional change, animate it smoothly back to center
+          if (dx !== 0 || dy !== 0) {
+            gsap.killTweensOf(el);
+            gsap.fromTo(el,
+              {
+                x: dx,
+                y: dy
+              },
+              {
+                x: 0,
+                y: 0,
+                duration: 0.8,
+                ease: "power2.out",
+                clearProps: "transform"
+              }
+            );
           }
-        );
+        });
       });
     });
   };
@@ -559,7 +590,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                         <TriviaCard 
                           card={card} 
                           revealed={true} 
-                          skipInitialFlip={idx === 0} 
+                          skipInitialFlip={true} 
                           isIncorrect={gameState.incorrectCardIds.includes(card.id)}
                           isHoverDisabled={isAnimating}
                         />
