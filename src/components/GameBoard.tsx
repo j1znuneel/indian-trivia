@@ -500,7 +500,9 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
           {/* Scrolling timeline container */}
           <div
             ref={timelineContainerRef}
-            className="w-full max-w-5xl overflow-x-auto no-scrollbar py-8 flex items-center px-12 snap-x"
+            className={`w-full max-w-5xl overflow-x-auto no-scrollbar py-8 flex items-center px-12 snap-x ${
+              isAnimating ? "pointer-events-none" : ""
+            }`}
           >
             {/* Timeline Base Placeholder (for GSAP deal flight targeting) */}
             {!showBaseCard && (
@@ -559,6 +561,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                           revealed={true} 
                           skipInitialFlip={idx === 0} 
                           isIncorrect={gameState.incorrectCardIds.includes(card.id)}
+                          isHoverDisabled={isAnimating}
                         />
                       </div>
                     </div>
@@ -607,7 +610,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
 
         {/* Next Card To Sort / Draw Deck Area */}
         {currentCard && (
-          <div className="flex flex-col items-center gap-4 mt-6">
+          <div className="flex flex-col items-center gap-4 mt-16">
             <span className="text-xs font-black bg-white border-2 border-black text-black px-3 py-1 uppercase shadow-brutal-sm rotate-[-1deg]">
               Draw Deck Pile
             </span>

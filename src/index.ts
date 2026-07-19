@@ -32,7 +32,7 @@ function parseWikidataDate(dateStr: string): number | null {
 function getSPARQLQuery(category: string): string {
   switch (category) {
     case "sports":
-      return `SELECT ?item ?itemLabel ?itemDescription ?date WHERE {
+      return `SELECT ?item ?itemLabel ?itemDescription ?date ?image WHERE {
         {
           SELECT DISTINCT ?item ?date WHERE {
             ?item wdt:P17 wd:Q668.
@@ -40,10 +40,11 @@ function getSPARQLQuery(category: string): string {
             ?item wdt:P585 ?date.
           } LIMIT 50
         }
+        OPTIONAL { ?item wdt:P18 ?image }
         SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
       }`;
     case "history":
-      return `SELECT ?item ?itemLabel ?itemDescription ?date WHERE {
+      return `SELECT ?item ?itemLabel ?itemDescription ?date ?image WHERE {
         {
           SELECT DISTINCT ?item ?date WHERE {
             {
@@ -57,10 +58,11 @@ function getSPARQLQuery(category: string): string {
             }
           } LIMIT 50
         }
+        OPTIONAL { ?item wdt:P18 ?image }
         SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
       }`;
     case "cinema":
-      return `SELECT ?item ?itemLabel ?itemDescription ?date WHERE {
+      return `SELECT ?item ?itemLabel ?itemDescription ?date ?image WHERE {
         {
           SELECT DISTINCT ?item ?date WHERE {
             ?item wdt:P31 wd:Q11424.
@@ -68,10 +70,11 @@ function getSPARQLQuery(category: string): string {
             ?item wdt:P577 ?date.
           } LIMIT 50
         }
+        OPTIONAL { ?item wdt:P18 ?image }
         SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
       }`;
     case "science":
-      return `SELECT ?item ?itemLabel ?itemDescription ?date WHERE {
+      return `SELECT ?item ?itemLabel ?itemDescription ?date ?image WHERE {
         {
           SELECT DISTINCT ?item ?date WHERE {
             ?item wdt:P31 ?type.
@@ -80,10 +83,11 @@ function getSPARQLQuery(category: string): string {
             ?item wdt:P571 ?date.
           } LIMIT 50
         }
+        OPTIONAL { ?item wdt:P18 ?image }
         SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
       }`;
     default: // general
-      return `SELECT ?item ?itemLabel ?itemDescription ?date WHERE {
+      return `SELECT ?item ?itemLabel ?itemDescription ?date ?image WHERE {
         {
           SELECT DISTINCT ?item ?date WHERE {
             ?item wdt:P17 wd:Q668.
@@ -92,6 +96,7 @@ function getSPARQLQuery(category: string): string {
             ?item wdt:P571 ?date.
           } LIMIT 50
         }
+        OPTIONAL { ?item wdt:P18 ?image }
         SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
       }`;
   }
@@ -143,6 +148,7 @@ const server = serve({
               const id = `wiki_${category}_${idx}_${Date.now()}`;
               const title = maskSpoilers(b.itemLabel?.value || "");
               const description = maskSpoilers(b.itemDescription?.value || "Historical milestone in India.");
+              const image = b.image?.value || null;
 
               // Filter out entities with invalid dates, empty titles, or Q-code titles
               if (year === null || !title || /^Q\d+$/.test(title)) {
@@ -154,7 +160,8 @@ const server = serve({
                 title,
                 description,
                 year,
-                category
+                category,
+                image
               };
             })
             .filter((card: any) => card !== null) as TriviaCard[];

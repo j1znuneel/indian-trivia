@@ -13,6 +13,7 @@ interface TriviaCardProps {
   onClick?: () => void;
   skipInitialFlip?: boolean;
   isIncorrect?: boolean;
+  isHoverDisabled?: boolean;
 }
 
 const CATEGORY_THEMES = {
@@ -53,7 +54,8 @@ export function TriviaCard({
   onDragEnd,
   onClick,
   skipInitialFlip = false,
-  isIncorrect = false
+  isIncorrect = false,
+  isHoverDisabled = false
 }: TriviaCardProps) {
   const theme = CATEGORY_THEMES[card.category];
   
@@ -62,7 +64,11 @@ export function TriviaCard({
     skipInitialFlip ? (revealed ? true : false) : (revealed ? false : true)
   );
   const [hoverFlipped, setHoverFlipped] = useState(false);
-  const canHoverFlip = revealed && !isCurrent;
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const canHoverFlip = revealed && !isCurrent && !isHoverDisabled;
+
+  const isFaceAActive = (canHoverFlip && hoverFlipped) || !isFlipped;
+  const isFaceBActive = !isFaceAActive;
 
   useEffect(() => {
     if (skipInitialFlip) {
@@ -77,11 +83,36 @@ export function TriviaCard({
     return () => clearTimeout(timer);
   }, [revealed, card.id, skipInitialFlip]);
 
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [card.id]);
+
   const formatYear = (year: number) => {
     if (year < 0) {
       return `${Math.abs(year)} BCE`;
     }
     return `${year} CE`;
+  };
+
+  const renderCardImage = () => {
+    if (!card.image) return null;
+    return (
+      <div className="relative w-full h-[64px] border border-black bg-[#FFEBD6] flex-shrink-0 my-1 overflow-hidden select-none">
+        {!imageLoaded && (
+          <div className="absolute inset-0 bg-[#EAD4BA] animate-pulse flex items-center justify-center">
+            <span className="text-[8px] font-black uppercase text-slate-600 tracking-wider">Loading...</span>
+          </div>
+        )}
+        <img
+          src={card.image}
+          alt={card.title}
+          onLoad={() => setImageLoaded(true)}
+          className={`w-full h-full object-cover transition-opacity duration-300 ${
+            imageLoaded ? "opacity-100" : "opacity-0 absolute"
+          }`}
+        />
+      </div>
+    );
   };
 
   return (
@@ -111,17 +142,20 @@ export function TriviaCard({
       >
         {/* ================= FACE A: CLUE FACE (Front) ================= */}
         <div 
-          className="absolute inset-0 backface-hidden border-[3px] border-black p-4 flex flex-col justify-between rounded-none bg-[#FFE885] shadow-brutal"
+          className={`absolute inset-0 backface-hidden border-[3px] border-black p-4 flex flex-col justify-between rounded-none bg-[#FFE885] ${
+            isFaceAActive ? "shadow-brutal" : ""
+          }`}
         >
           {/* Header Spacer */}
           <div className="w-full h-4" />
 
           {/* Clue Text */}
-          <div className="flex-1 flex flex-col justify-center py-2 text-center">
-            <h4 className="text-sm font-black text-black uppercase leading-tight tracking-tight mb-2">
+          <div className="flex-1 flex flex-col justify-center py-1 text-center select-none overflow-hidden">
+            <h4 className="text-xs font-black text-black uppercase leading-tight tracking-tight mb-1">
               {card.title}
             </h4>
-            <p className="text-[10px] text-black font-semibold leading-normal line-clamp-4 bg-white border border-black/35 p-1.5 shadow-[2px_2px_0px_rgba(0,0,0,0.15)]">
+            {renderCardImage()}
+            <p className="text-[9px] text-black font-semibold leading-normal line-clamp-3 bg-white border border-black/35 p-1 shadow-[1.5px_1.5px_0px_rgba(0,0,0,0.15)] overflow-hidden">
               {card.description}
             </p>
           </div>
@@ -140,19 +174,22 @@ export function TriviaCard({
         >
           {revealed ? (
             /* Revealed Year Face */
-            <div className={`w-full h-full border-[3px] border-black p-4 flex flex-col justify-between rounded-none ${theme.bg} shadow-brutal-back`}>
+            <div className={`w-full h-full border-[3px] border-black p-4 flex flex-col justify-between rounded-none ${theme.bg} ${
+              isFaceBActive ? "shadow-brutal" : ""
+            }`}>
               {/* Header Spacer */}
               <div className="w-full h-4" />
 
               {/* Year Value */}
-              <div className="flex-1 flex flex-col justify-center items-center text-center py-2">
-                <div className={`border-[2px] border-black px-3 py-1 text-sm font-black text-black uppercase tracking-wide flex items-center gap-1.5 shadow-[2px_2px_0px_rgba(0,0,0,1)] ${
+              <div className="flex-1 flex flex-col justify-center items-center text-center py-1 select-none">
+                <div className={`border-[2px] border-black px-2 py-0.5 text-xs font-black text-black uppercase tracking-wide flex items-center gap-1.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] ${
                   isIncorrect ? "bg-[#FF6B6B]" : "bg-[#FFF97A]"
                 }`}>
-                  <Calendar className="w-4 h-4 text-black stroke-[2.5]" />
+                  <Calendar className="w-3 h-3 text-black stroke-[2.5]" />
                   {formatYear(card.year)}
                 </div>
-                <h4 className="mt-4 text-xs font-black text-black uppercase leading-tight line-clamp-2 px-1">
+                {renderCardImage()}
+                <h4 className="mt-1 text-[10px] font-black text-black uppercase leading-tight line-clamp-2 px-1">
                   {card.title}
                 </h4>
               </div>
@@ -166,7 +203,9 @@ export function TriviaCard({
             </div>
           ) : (
             /* Card Back Design (Draw Pile Style) */
-            <div className="w-full h-full border-[3px] border-black rounded-none bg-card-back shadow-brutal flex flex-col justify-center items-center p-4">
+            <div className={`w-full h-full border-[3px] border-black rounded-none bg-card-back flex flex-col justify-center items-center p-4 ${
+              isFaceBActive ? "shadow-brutal" : ""
+            }`}>
               <div className="w-16 h-16 rounded-full border-[3px] border-black bg-[#FFF97A] flex items-center justify-center shadow-brutal-sm rotate-[-6deg] animate-pulse">
                 <span className="text-3xl font-black text-black">?</span>
               </div>
