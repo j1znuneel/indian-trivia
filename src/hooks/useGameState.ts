@@ -3,7 +3,7 @@ import { TRIVIA_DATA, TriviaCard } from "../data/trivia";
 import { maskSpoilers } from "../lib/utils";
 
 export type GameStatus = "landing" | "playing" | "gameover";
-export type Category = "history" | "sports" | "cinema" | "science" | "general";
+export type Category = "history" | "cinema" | "science" | "general" | "culture";
 
 function shuffle<T>(array: T[]): T[] {
   const arr = [...array];

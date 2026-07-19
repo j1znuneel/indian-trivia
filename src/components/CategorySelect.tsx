@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Category } from "../hooks/useGameState";
-import { History, Trophy, Film, Rocket, Landmark } from "lucide-react";
+import { History, Sparkles, Film, Rocket, Landmark, Trophy } from "lucide-react";
 import gsap from "gsap";
 
 interface CategorySelectProps {
@@ -98,24 +98,16 @@ export function CategorySelect({ onSelect, highScores }: CategorySelectProps) {
   const categories: CategoryOption[] = [
     {
       id: "history",
-      title: "History & Politics",
-      description: "From ancient civilizations and dynastic rulers to modern nationhood.",
+      title: "History",
+      description: "From ancient civilizations and dynastic rulers to freedom struggles.",
       icon: <Landmark className="w-8 h-8 text-black" />,
       bgColor: "bg-[#FFBE7A]", /* Saffron Pastel */
       iconBg: "bg-[#FF931F]"
     },
     {
-      id: "sports",
-      title: "Sports & Games",
-      description: "Celebrating Olympic triumphs, cricket legends, and sporting milestones.",
-      icon: <Trophy className="w-8 h-8 text-black" />,
-      bgColor: "bg-[#7AE4FF]", /* Sky Blue Pastel */
-      iconBg: "bg-[#00B5E2]"
-    },
-    {
       id: "cinema",
       title: "Cinema & Arts",
-      description: "Tracing Raja Harishchandra, Bollywood blockbusters, and Oscar wins.",
+      description: "Tracing Raja Harishchandra, Indian cinema blockbusters, and Oscar wins.",
       icon: <Film className="w-8 h-8 text-black" />,
       bgColor: "bg-[#C87AFF]", /* Purple Pastel */
       iconBg: "bg-[#A020F0]"
@@ -123,15 +115,23 @@ export function CategorySelect({ onSelect, highScores }: CategorySelectProps) {
     {
       id: "science",
       title: "Science & Technology",
-      description: "Chronicles of space exploration, nuclear milestones, and pioneers.",
+      description: "Space missions, satellites, supercomputers, and research milestones.",
       icon: <Rocket className="w-8 h-8 text-black" />,
       bgColor: "bg-[#7AFF9B]", /* Emerald Pastel */
       iconBg: "bg-[#129E59]"
     },
     {
+      id: "culture",
+      title: "Culture & Heritage",
+      description: "Religions, spiritual traditions, sacred architecture, and festivals.",
+      icon: <Sparkles className="w-8 h-8 text-black" />,
+      bgColor: "bg-[#FFE885]", /* Warm Yellow Pastel */
+      iconBg: "bg-[#E2B700]"
+    },
+    {
       id: "general",
-      title: "General & Culture",
-      description: "Literary Nobels, infrastructure marvels, and cultural milestones.",
+      title: "General Trivia",
+      description: "An all-around mix spanning history, cinema, science, and culture.",
       icon: <History className="w-8 h-8 text-black" />,
       bgColor: "bg-[#FF7A9B]", 
       iconBg: "bg-[#FF4D75]"

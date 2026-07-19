@@ -3,599 +3,612 @@ export interface TriviaCard {
   title: string;
   description: string;
   year: number;
-  category: "history" | "sports" | "cinema" | "science" | "general";
-  image?: string | null;
+  category: "history" | "cinema" | "science" | "general" | "culture";
+  image: string;
 }
 
 export const TRIVIA_DATA: TriviaCard[] = [
-  // ==================== HISTORY & POLITICS ====================
+  // =========================================================================
+  // 1. HISTORY (Civilizational, Dynastic, Freedom Movement & Nationhood)
+  // =========================================================================
   {
     id: "hist_1",
     title: "Indus Valley Civilization Peak",
-    description: "Major urban centers like Harappa and Mohenjo-daro reached their peak of development.",
+    description: "Planned urban centers like Harappa and Mohenjo-daro reached their peak of bronze-age development.",
     year: -2500,
-    category: "history"
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Mohenjo-daro.jpg/500px-Mohenjo-daro.jpg"
   },
   {
     id: "hist_2",
     title: "Birth of Gautama Buddha",
-    description: "Siddhartha Gautama, who went on to found Buddhism, was born in Lumbini.",
+    description: "Siddhartha Gautama, who went on to attain enlightenment and found Buddhism, was born in Lumbini.",
     year: -563,
-    category: "history"
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Statue_of_Gautama_Buddha_in_Lumbini.jpg/500px-Statue_of_Gautama_Buddha_in_Lumbini.jpg"
   },
   {
     id: "hist_3",
-    title: "Alexander's Invasion of India",
-    description: "Alexander the Great crossed the Indus and fought King Porus in the Battle of the Hydaspes.",
+    title: "Battle of the Hydaspes",
+    description: "Alexander the Great crossed the Jhelum River and fought King Porus in a historic ancient battle.",
     year: -326,
-    category: "history"
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Alexander_the_Great_%28356-23_BC%29_and_Porus_%28oil_on_canvas%29.jpg/500px-Alexander_the_Great_%28356-23_BC%29_and_Porus_%28oil_on_canvas%29.jpg"
   },
   {
     id: "hist_4",
     title: "Founding of the Mauryan Empire",
-    description: "Chandragupta Maurya established the empire with the help of his advisor Chanakya.",
+    description: "Chandragupta Maurya established the empire with guidance from his legendary advisor Chanakya.",
     year: -321,
-    category: "history"
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Maurya_Empire%2C_c.250_BCE_network_model_v01.png/500px-Maurya_Empire%2C_c.250_BCE_network_model_v01.png"
   },
   {
     id: "hist_5",
-    title: "Reign of Ashoka the Great",
-    description: "Ashoka ascended the Mauryan throne and later embraced Buddhism after the Kalinga War.",
+    title: "Reign of Emperor Ashoka the Great",
+    description: "Ashoka ascended the Mauryan throne and later embraced Buddhism following the Kalinga War.",
     year: -268,
-    category: "history"
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Ashoka%27s_visit_to_the_Ramagrama_stupa_Sanchi_Stupa_1_Southern_gateway.jpg/500px-Ashoka%27s_visit_to_the_Ramagrama_stupa_Sanchi_Stupa_1_Southern_gateway.jpg"
   },
   {
     id: "hist_6",
-    title: "Accession of Kanishka",
-    description: "The Kushan emperor Kanishka ascended the throne, beginning the Saka era.",
+    title: "Accession of Kanishka & Saka Era",
+    description: "Kushan Emperor Kanishka ascended the throne, marking the inception of the Saka calendar era.",
     year: 78,
-    category: "history"
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/KanishkaCoin3.JPG/500px-KanishkaCoin3.JPG"
   },
   {
     id: "hist_7",
     title: "Golden Age of the Gupta Empire",
-    description: "Chandragupta I ascended the throne, initiating a period of immense scientific and cultural growth.",
+    description: "Chandragupta I ascended the throne, initiating an era of immense mathematical and cultural achievements.",
     year: 320,
-    category: "history"
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Map_of_the_Gupta_Empire.png/500px-Map_of_the_Gupta_Empire.png"
   },
   {
     id: "hist_8",
-    title: "Completion of the Taj Mahal",
-    description: "The magnificent white marble mausoleum commissioned by Shah Jahan was completed.",
-    year: 1653,
-    category: "history"
+    title: "Chola Maritime Naval Expedition",
+    description: "Emperor Rajendra Chola I launched a powerful naval campaign across the Bay of Bengal into Southeast Asia.",
+    year: 1025,
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/4/4e/Thanjavur_temple.jpg"
   },
   {
     id: "hist_9",
-    title: "Battle of Plassey",
-    description: "British East India Company forces under Robert Clive defeated the Nawab of Bengal, initiating British rule.",
-    year: 1757,
-    category: "history"
+    title: "First Battle of Panipat",
+    description: "Babur defeated Ibrahim Lodi at Panipat, establishing the Mughal Empire in North India.",
+    year: 1526,
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/The_battle_of_Panipat_and_the_death_of_Sultan_Ibr%C4%81h%C4%ABm%2C_the_last_of_the_L%C5%8Dd%C4%AB_Sultans_of_Delhi.jpg/500px-The_battle_of_Panipat_and_the_death_of_Sultan_Ibr%C4%81h%C4%ABm%2C_the_last_of_the_L%C5%8Dd%C4%AB_Sultans_of_Delhi.jpg"
   },
   {
     id: "hist_10",
-    title: "First War of Indian Independence",
-    description: "Also known as the Sepoy Mutiny, this major uprising against British East India Company rule spread across North India.",
-    year: 1857,
-    category: "history"
+    title: "Coronation of Chhatrapati Shivaji Maharaj",
+    description: "Shivaji Maharaj was crowned King of the Maratha Empire at Raigad Fort.",
+    year: 1674,
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Shivaji_British_Museum.jpg/500px-Shivaji_British_Museum.jpg"
   },
   {
     id: "hist_11",
-    title: "Founding of the Indian National Congress",
-    description: "The political party was founded in Bombay, initially representing elite opinion but later driving the independence movement.",
-    year: 1885,
-    category: "history"
+    title: "Completion of the Taj Mahal",
+    description: "The white marble mausoleum commissioned by Shah Jahan in memory of Mumtaz Mahal was completed.",
+    year: 1653,
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Taj_Mahal_%28Edited%29.jpeg/500px-Taj_Mahal_%28Edited%29.jpeg"
   },
   {
     id: "hist_12",
-    title: "Jallianwala Bagh Massacre",
-    description: "British troops under General Dyer opened fire on a peaceful gathering in Amritsar, killing hundreds.",
-    year: 1919,
-    category: "history"
+    title: "Battle of Plassey",
+    description: "British East India Company forces led by Robert Clive defeated Nawab Siraj ud-Daulah of Bengal.",
+    year: 1757,
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Lord_Clive_meeting_with_Mir_Jafar_after_the_Battle_of_Plassey.jpg/500px-Lord_Clive_meeting_with_Mir_Jafar_after_the_Battle_of_Plassey.jpg"
   },
   {
     id: "hist_13",
-    title: "The Salt March (Dandi Satyagraha)",
-    description: "Mahatma Gandhi walked 240 miles to the sea at Dandi to produce salt, launching the Civil Disobedience Movement.",
-    year: 1930,
-    category: "history"
+    title: "First War of Indian Independence",
+    description: "The major uprising against East India Company rule erupted in Meerut and spread across Northern India.",
+    year: 1857,
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Indian_Rebellion_of_1857.jpg/500px-Indian_Rebellion_of_1857.jpg"
   },
   {
     id: "hist_14",
-    title: "Quit India Movement Launched",
-    description: "Gandhi issued a call to 'Do or Die' demanding an immediate end to British rule in India.",
-    year: 1942,
-    category: "history"
+    title: "Founding of the Indian National Congress",
+    description: "Indian political leaders and A.O. Hume established the national organization in Bombay.",
+    year: 1885,
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Indian_National_Congress_hand_logo.svg/500px-Indian_National_Congress_hand_logo.svg.png"
   },
   {
     id: "hist_15",
-    title: "India Gains Independence",
-    description: "British rule ended and the nation of India was partitioned, creating India and Pakistan.",
-    year: 1947,
-    category: "history"
+    title: "Jallianwala Bagh Massacre",
+    description: "British forces under General Dyer opened fire on a peaceful gathering in Amritsar.",
+    year: 1919,
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Jallianwala_Bagh_in_Day_light.JPG/500px-Jallianwala_Bagh_in_Day_light.JPG"
   },
   {
     id: "hist_16",
-    title: "Adoption of the Constitution of India",
-    description: "The constitution drafted by Dr. B.R. Ambedkar came into effect, establishing India as a Republic.",
-    year: 1950,
-    category: "history"
+    title: "The Dandi Salt March",
+    description: "Mahatma Gandhi walked 240 miles to the Dandi seashore to defy the colonial salt tax.",
+    year: 1930,
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Marche_sel.jpg/500px-Marche_sel.jpg"
   },
   {
     id: "hist_17",
-    title: "First General Elections of India",
-    description: "The democratic nation held its first landmark general elections under universal adult suffrage.",
-    year: 1951,
-    category: "history"
+    title: "Quit India Movement Launched",
+    description: "Gandhi delivered his famous 'Do or Die' speech demanding an immediate end to British rule.",
+    year: 1942,
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Quit_india_Movement_Collage.png/500px-Quit_india_Movement_Collage.png"
   },
   {
     id: "hist_18",
-    title: "Integration of Goa",
-    description: "Indian armed forces executed Operation Vijay, ending 451 years of Portuguese colonial rule in Goa.",
-    year: 1961,
-    category: "history"
+    title: "Indian Independence Act",
+    description: "India gained freedom from British colonial rule, ending nearly two centuries of foreign governance.",
+    year: 1947,
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Coat_of_arms_of_the_United_Kingdom_%281901%E2%80%931952%29.svg/500px-Coat_of_arms_of_the_United_Kingdom_%281901%E2%80%931952%29.svg.png"
   },
   {
     id: "hist_19",
-    title: "Signing of the Simla Agreement",
-    description: "Indira Gandhi and Zulfikar Ali Bhutto signed a peace treaty following the Indo-Pakistani War of 1971.",
-    year: 1972,
-    category: "history"
+    title: "Adoption of the Constitution of India",
+    description: "Drafted under Dr. B.R. Ambedkar, the Constitution came into effect, making India a sovereign Republic.",
+    year: 1950,
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Constitution_of_India.jpg/500px-Constitution_of_India.jpg"
   },
   {
     id: "hist_20",
-    title: "Liberalization of the Indian Economy",
-    description: "Facing a major balance of payments crisis, India launched structural reforms and opened its economy.",
-    year: 1991,
-    category: "history"
+    title: "Liberation of Goa (Operation Vijay)",
+    description: "Indian armed forces integrated Goa into India, ending 451 years of Portuguese colonial presence.",
+    year: 1961,
+    category: "history",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Operation_Vijay_1961_Goa.jpg/500px-Operation_Vijay_1961_Goa.jpg"
   },
 
-  // ==================== SPORTS ====================
-  {
-    id: "sport_1",
-    title: "First Olympic Hockey Gold",
-    description: "India defeated the Netherlands in Amsterdam to secure its first-ever Olympic gold medal in field hockey.",
-    year: 1928,
-    category: "sports"
-  },
-  {
-    id: "sport_2",
-    title: "Inaugural Asian Games in New Delhi",
-    description: "India hosted the very first Asian Games, welcoming athletes from across Asia.",
-    year: 1951,
-    category: "sports"
-  },
-  {
-    id: "sport_3",
-    title: "Milkha Singh's Rome Olympics Run",
-    description: "The 'Flying Sikh' narrowly missed a podium finish, placing fourth in the historic 400m Olympic final.",
-    year: 1960,
-    category: "sports"
-  },
-  {
-    id: "sport_4",
-    title: "Krishnan's Wimbledon Semifinal",
-    description: "Ramanathan Krishnan became the first Indian to reach the Men's Singles semifinals at Wimbledon.",
-    year: 1960,
-    category: "sports"
-  },
-  {
-    id: "sport_5",
-    title: "First Cricket World Cup Victory",
-    description: "Kapil Dev's underdog Indian team defeated the dominant West Indies at Lord's, changing cricket forever.",
-    year: 1983,
-    category: "sports"
-  },
-  {
-    id: "sport_6",
-    title: "PT Usha's Olympic Heartbreak",
-    description: "PT Usha finished fourth in the 400m hurdles at the Los Angeles Olympics, missing bronze by 1/100th of a second.",
-    year: 1984,
-    category: "sports"
-  },
-  {
-    id: "sport_7",
-    title: "India's First Chess Grandmaster",
-    description: "At age 18, Viswanathan Anand earned the title, sparking a chess revolution in India.",
-    year: 1988,
-    category: "sports"
-  },
-  {
-    id: "sport_8",
-    title: "Leander Paes wins Olympic Bronze",
-    description: "Paes broke a long Olympic medal dry-spell for India by winning bronze in Singles Tennis in Atlanta.",
-    year: 1996,
-    category: "sports"
-  },
-  {
-    id: "sport_9",
-    title: "Karnam Malleswari wins Olympic Medal",
-    description: "Malleswari won bronze in Weightlifting in Sydney, becoming the first Indian woman to win an Olympic medal.",
-    year: 2000,
-    category: "sports"
-  },
-  {
-    id: "sport_10",
-    title: "Rathore's Olympic Shooting Silver",
-    description: "Rajyavardhan Singh Rathore secured silver in Double Trap shooting in Athens, India's first individual silver.",
-    year: 2004,
-    category: "sports"
-  },
-  {
-    id: "sport_11",
-    title: "Inaugural ICC T20 World Cup Win",
-    description: "India defeated Pakistan in a thrilling final in Johannesburg to win the first T20 World Cup.",
-    year: 2007,
-    category: "sports"
-  },
-  {
-    id: "sport_12",
-    title: "First Individual Olympic Gold",
-    description: "Abhinav Bindra won gold in the 10m Air Rifle shooting event at the Beijing Olympics.",
-    year: 2008,
-    category: "sports"
-  },
-  {
-    id: "sport_13",
-    title: "Second Cricket World Cup Victory",
-    description: "MS Dhoni hit a six to seal the final against Sri Lanka in Mumbai, winning the World Cup at home.",
-    year: 2011,
-    category: "sports"
-  },
-  {
-    id: "sport_14",
-    title: "Mary Kom's Olympic Boxing Bronze",
-    description: "The flyweight boxer secured bronze at the London Olympics, cementing her legacy.",
-    year: 2012,
-    category: "sports"
-  },
-  {
-    id: "sport_15",
-    title: "PV Sindhu's Olympic Silver",
-    description: "PV Sindhu became the first Indian badminton player to win an Olympic silver medal in Rio.",
-    year: 2016,
-    category: "sports"
-  },
-  {
-    id: "sport_16",
-    title: "Neeraj Chopra's Olympic Javelin Gold",
-    description: "Chopra won India's first-ever Olympic gold medal in track and field in Tokyo.",
-    year: 2021,
-    category: "sports"
-  },
-  {
-    id: "sport_17",
-    title: "First Thomas Cup Badminton Title",
-    description: "The Indian men's badminton team swept powerhouse Indonesia 3-0 to lift the historic trophy.",
-    year: 2022,
-    category: "sports"
-  },
-  {
-    id: "sport_18",
-    title: "Bopanna's Historic Grand Slam Win",
-    description: "Rohan Bopanna won the Australian Open Men's Doubles, becoming the oldest male player to win a Major.",
-    year: 2024,
-    category: "sports"
-  },
-
-  // ==================== CINEMA & ART ====================
-  {
-    id: "cine_1",
-    title: "Release of Raja Harishchandra",
-    description: "Directed by Dadasaheb Phalke, this was India's first silent full-length feature film.",
-    year: 1913,
-    category: "cinema"
-  },
-  {
-    id: "cine_2",
-    title: "Release of Alam Ara",
-    description: "Directed by Ardeshir Irani, this film was introduced as India's first talkie (sound film).",
-    year: 1931,
-    category: "cinema"
-  },
-  {
-    id: "cine_3",
-    title: "First Filmfare Awards",
-    description: "Dilip Kumar won the first Best Actor award for 'Daag' at the newly instituted awards ceremony.",
-    year: 1954,
-    category: "cinema"
-  },
-  {
-    id: "cine_4",
-    title: "Release of Pather Panchali",
-    description: "Directed by Satyajit Ray, this Bengali masterpiece put Indian cinema on the global map.",
-    year: 1955,
-    category: "cinema"
-  },
-  {
-    id: "cine_5",
-    title: "Mother India's Oscar Nomination",
-    description: "Mehboob Khan's drama became the first Indian film nominated for the Academy Award for Best Foreign Language Film.",
-    year: 1958,
-    category: "cinema"
-  },
-  {
-    id: "cine_6",
-    title: "Release of Mughal-e-Azam",
-    description: "K. Asif's historical epic was released, becoming a milestone of artistic and scale grandeur.",
-    year: 1960,
-    category: "cinema"
-  },
-  {
-    id: "cine_7",
-    title: "Dadasaheb Phalke Award Instituted",
-    description: "The government created the award to recognize outstanding contributions to the growth of Indian cinema.",
-    year: 1969,
-    category: "cinema"
-  },
-  {
-    id: "cine_8",
-    title: "Release of Sholay",
-    description: "Ramesh Sippy's blockbuster 'curry western' was released, running for years in theatres.",
-    year: 1975,
-    category: "cinema"
-  },
-  {
-    id: "cine_9",
-    title: "Bhanu Athaiya's Oscar Win",
-    description: "Athaiya won India's first Academy Award for Costume Design in Richard Attenborough's film Gandhi.",
-    year: 1983,
-    category: "cinema"
-  },
-  {
-    id: "cine_10",
-    title: "Satyajit Ray's Lifetime Achievement Oscar",
-    description: "The master director received an Honorary Academy Award on his deathbed in Kolkata.",
-    year: 1992,
-    category: "cinema"
-  },
-  {
-    id: "cine_11",
-    title: "Release of Dilwale Dulhania Le Jayenge",
-    description: "Aditya Chopra's film was released, going on to run continuously for over 25 years in Mumbai.",
-    year: 1995,
-    category: "cinema"
-  },
-  {
-    id: "cine_12",
-    title: "Lagaan's Oscar Nomination",
-    description: "Aamir Khan's sports drama reached the final five nomination list for Best Foreign Language Film.",
-    year: 2002,
-    category: "cinema"
-  },
-  {
-    id: "cine_13",
-    title: "Rahman's Double Oscar Win",
-    description: "A.R. Rahman won two Academy Awards for Best Original Score and Best Original Song for Slumdog Millionaire.",
-    year: 2009,
-    category: "cinema"
-  },
-  {
-    id: "cine_14",
-    title: "Release of Baahubali: The Conclusion",
-    description: "SS Rajamouli's epic fantasy broke records, becoming the highest-grossing film in India.",
-    year: 2017,
-    category: "cinema"
-  },
-  {
-    id: "cine_15",
-    title: "Naatu Naatu wins Oscar",
-    description: "The energetic Telugu track from RRR won the Academy Award for Best Original Song.",
-    year: 2023,
-    category: "cinema"
-  },
-  {
-    id: "cine_16",
-    title: "The Elephant Whisperers wins Oscar",
-    description: "Directed by Kartiki Gonsalves, this film won the Academy Award for Best Documentary Short Film.",
-    year: 2023,
-    category: "cinema"
-  },
-
-  // ==================== SCIENCE & TECHNOLOGY ====================
+  // =========================================================================
+  // 2. SCIENCE & TECHNOLOGY (Scientific Innovations, Space, Supercomputing)
+  // =========================================================================
   {
     id: "sci_1",
-    title: "Discovery of the Raman Effect",
-    description: "Physicist C.V. Raman discovered the scattering of light, earning him a Nobel Prize in 1930.",
-    year: 1928,
-    category: "science"
+    title: "Aryabhata's Astronomical Treatise & Zero",
+    description: "Mathematician Aryabhata composed the Aryabhatiya, introducing place-value system and rotation of Earth.",
+    year: 499,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Aryabhatta_of_Bihar.jpg/500px-Aryabhatta_of_Bihar.jpg"
   },
   {
     id: "sci_2",
-    title: "Tata Institute of Fundamental Research (TIFR)",
-    description: "Homi J. Bhabha founded the institute to spearhead nuclear physics research in India.",
-    year: 1945,
-    category: "science"
+    title: "Indian Institute of Science (IISc) Founded",
+    description: "Established in Bengaluru with support from Jamsetji Tata and Maharaja Krishnaraja Wadiyar IV.",
+    year: 1909,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/IISc_Main_Building.jpg/500px-IISc_Main_Building.jpg"
   },
   {
     id: "sci_3",
-    title: "First IIT Established in Kharagpur",
-    description: "India's first Indian Institute of Technology was founded, training generations of world-class engineers.",
-    year: 1951,
-    category: "science"
+    title: "Meghnad Saha Thermal Ionization Equation",
+    description: "Astrophysicist Meghnad Saha derived his fundamental equation relating temperature to atomic ionization.",
+    year: 1920,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/e/ef/Dr-Meghnad-Saha.jpg"
   },
   {
     id: "sci_4",
-    title: "Bhabha Atomic Research Centre Founded",
-    description: "The nuclear research facility (initially AEET) was established in Trombay, Mumbai.",
-    year: 1954,
-    category: "science"
+    title: "Bose-Einstein Statistics Formulation",
+    description: "Satyendra Nath Bose submitted his paper on quantum statistics, paving the way for Bose-Einstein condensates.",
+    year: 1924,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/f/fe/SatyenBose1925.jpg"
   },
   {
     id: "sci_5",
-    title: "Founding of ISRO",
-    description: "The Indian Space Research Organisation was created under Vikram Sarabhai to manage space activities.",
-    year: 1969,
-    category: "science"
+    title: "Discovery of the Raman Effect",
+    description: "Sir C.V. Raman discovered light scattering in Kolkata, winning the Nobel Prize in Physics.",
+    year: 1928,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Sir_CV_Raman.JPG/500px-Sir_CV_Raman.JPG"
   },
   {
     id: "sci_6",
-    title: "Smiling Buddha Nuclear Test",
-    description: "India successfully conducted its first underground nuclear test at Pokhran, Rajasthan.",
-    year: 1974,
-    category: "science"
+    title: "Tata Institute of Fundamental Research (TIFR) Founded",
+    description: "Dr. Homi J. Bhabha founded India's premier nuclear & theoretical physics laboratory in Mumbai.",
+    year: 1945,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Homi_Jehangir_Bhabha_1960s.jpg/500px-Homi_Jehangir_Bhabha_1960s.jpg"
   },
   {
     id: "sci_7",
-    title: "Aryabhata Satellite Launch",
-    description: "India's first indigenous satellite, named after the ancient astronomer, was launched into space.",
-    year: 1975,
-    category: "science"
+    title: "First Indian Institute of Technology (IIT Kharagpur)",
+    description: "India's premier technological institute was established at Kharagpur, West Bengal.",
+    year: 1951,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Entrance_Gate_of_IIT_Kharagpur.jpg/500px-Entrance_Gate_of_IIT_Kharagpur.jpg"
   },
   {
     id: "sci_8",
-    title: "First Indian in Space",
-    description: "Rakesh Sharma traveled aboard the Soviet Soyuz T-11 spacecraft and famously described India as 'Saare Jahan Se Achha'.",
-    year: 1984,
-    category: "science"
+    title: "Apsara Nuclear Research Reactor Operational",
+    description: "Asia's first nuclear research reactor achieved criticality at BARC, Mumbai.",
+    year: 1956,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Bhabha_Atomic_Research_Centre_Logo.png/500px-Bhabha_Atomic_Research_Centre_Logo.png"
   },
   {
     id: "sci_9",
-    title: "PARAM 8000 Supercomputer",
-    description: "C-DAC built India's first indigenously designed supercomputer, defying tech export bans.",
-    year: 1991,
-    category: "science"
+    title: "First Thumba Sounding Rocket Launch",
+    description: "India launched a Nike-Apache sounding rocket from Thumba, Kerala, inaugurating its space program.",
+    year: 1963,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Indian_Space_Research_Organisation_Logo.svg/500px-Indian_Space_Research_Organisation_Logo.svg.png"
   },
   {
     id: "sci_10",
-    title: "Chandrayaan-1 Moon Mission",
-    description: "India's first lunar mission was launched, discovering water molecules on the Moon's surface.",
-    year: 2008,
-    category: "science"
+    title: "ISRO Established",
+    description: "Dr. Vikram Sarabhai founded the Indian Space Research Organisation to harness space technology.",
+    year: 1969,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Indian_Space_Research_Organisation_Logo.svg/500px-Indian_Space_Research_Organisation_Logo.svg.png"
   },
   {
     id: "sci_11",
-    title: "Mars Orbiter Mission (Mangalyaan) Arrival",
-    description: "India became the first nation to reach Martian orbit on its maiden attempt, doing so at a fraction of standard cost.",
-    year: 2014,
-    category: "science"
+    title: "Smiling Buddha (Pokhran-I Test)",
+    description: "India conducted its first successful underground nuclear detonation in Pokhran, Rajasthan.",
+    year: 1974,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Bhabha_Atomic_Research_Centre_Logo.png/500px-Bhabha_Atomic_Research_Centre_Logo.png"
   },
   {
     id: "sci_12",
-    title: "India declared Polio-Free",
-    description: "Following a massive immunisation drive, the World Health Organization certified India free of wild polio.",
-    year: 2014,
-    category: "science"
+    title: "Aryabhata Satellite Launch",
+    description: "India's first indigenous artificial satellite was launched into space aboard a Kosmos-3M rocket.",
+    year: 1975,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/5/50/Aryabhata_Satellite.jpg"
   },
   {
     id: "sci_13",
-    title: "Record Launch of 104 Satellites",
-    description: "ISRO's PSLV-C37 successfully put 104 satellites into orbit in a single launch, breaking world records.",
-    year: 2017,
-    category: "science"
+    title: "SLV-3 Rohini Satellite Launch",
+    description: "India became the 6th spacefaring nation with the successful launch of its indigenous SLV-3 rocket.",
+    year: 1980,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Indian_Space_Research_Organisation_Logo.svg/500px-Indian_Space_Research_Organisation_Logo.svg.png"
   },
   {
     id: "sci_14",
-    title: "Chandrayaan-3 Lands on Moon",
-    description: "India became the first country to land a spacecraft (Vikram and Pragyan) near the Lunar South Pole.",
-    year: 2023,
-    category: "science"
+    title: "First Indian Antarctic Expedition",
+    description: "Scientific expedition team landed in Antarctica, establishing the Dakshin Gangotri research station.",
+    year: 1981,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Rakesh_Sharma.jpg/500px-Rakesh_Sharma.jpg"
   },
   {
     id: "sci_15",
-    title: "Aditya-L1 Solar Mission Launch",
-    description: "ISRO launched its first dedicated scientific mission to study the Sun, placing it in halo orbit.",
+    title: "Wing Commander Rakesh Sharma Spaceflight",
+    description: "Rakesh Sharma became the first Indian citizen in space aboard Soyuz T-11 to the Salyut 7 space station.",
+    year: 1984,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Rakesh_Sharma.jpg/500px-Rakesh_Sharma.jpg"
+  },
+  {
+    id: "sci_16",
+    title: "PARAM 8000 Indigenous Supercomputer",
+    description: "C-DAC built India's first indigenous supercomputer under the leadership of Dr. Vijay P. Bhatkar.",
+    year: 1991,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Bhabha_Atomic_Research_Centre_Logo.png/500px-Bhabha_Atomic_Research_Centre_Logo.png"
+  },
+  {
+    id: "sci_17",
+    title: "Pokhran-II (Operation Shakti) Nuclear Tests",
+    description: "India conducted five nuclear weapon detonations at Pokhran under Dr. A.P.J. Abdul Kalam.",
+    year: 1998,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/A._P._J._Abdul_Kalam.jpg/500px-A._P._J._Abdul_Kalam.jpg"
+  },
+  {
+    id: "sci_18",
+    title: "Chandrayaan-1 Lunar Discovery of Water",
+    description: "India's first lunar orbiter mission confirmed the existence of water molecules on the Moon's surface.",
+    year: 2008,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/CY1_2007_%28cropped%29.jpg/500px-CY1_2007_%28cropped%29.jpg"
+  },
+  {
+    id: "sci_19",
+    title: "Mars Orbiter Mission (Mangalyaan)",
+    description: "ISRO inserted Mangalyaan into Martian orbit on its maiden attempt, a global spaceflight milestone.",
+    year: 2013,
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Mars_Orbiter_Mission_Over_Mars_%2815237158879%29.jpg/500px-Mars_Orbiter_Mission_Over_Mars_%2815237158879%29.jpg"
+  },
+  {
+    id: "sci_20",
+    title: "Chandrayaan-3 Historic Moon South Pole Landing",
+    description: "Vikram lander touched down near the Moon's south pole, making India the 1st country at the lunar south pole.",
     year: 2023,
-    category: "science"
+    category: "science",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Chandrayaan-3_%E2%80%93_Image_of_Vikram_lander_on_lunar_surface_taken_by_Pragyan_rover_navcam_at_1104_IST%2C_30_August_2023_from_15_meters_away_%28with_text%29.webp/500px-Chandrayaan-3_%E2%80%93_Image_of_Vikram_lander_on_lunar_surface_taken_by_Pragyan_rover_navcam_at_1104_IST%2C_30_August_2023_from_15_meters_away_%28with_text%29.webp.png"
   },
 
-  // ==================== GENERAL & CULTURE ====================
+  // =========================================================================
+  // 3. CINEMA & ARTS (Landmark Indian Films, Oscar Wins, Artistic Milestones)
+  // =========================================================================
+  {
+    id: "cin_1",
+    title: "Raja Harishchandra Released",
+    description: "Dadasaheb Phalke released India's first full-length silent feature film, pioneering Indian cinema.",
+    year: 1913,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/6/6a/Publicity_poster_for_film%2C_Raja_Harishchandra_%281913%29.jpg"
+  },
+  {
+    id: "cin_2",
+    title: "Alam Ara (First Indian Sound Talkie Film)",
+    description: "Director Ardeshir Irani released India's first sound motion picture, featuring 7 songs.",
+    year: 1931,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/f/f5/Alam_Ara_poster%2C_1931.jpg"
+  },
+  {
+    id: "cin_3",
+    title: "Neecha Nagar Wins Grand Prix at Cannes",
+    description: "Chetan Anand's social-realist film became the first Indian movie awarded at Cannes Film Festival.",
+    year: 1946,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Neecha_Nagar_%281946%29.webm/500px--Neecha_Nagar_%281946%29.webm.jpg"
+  },
+  {
+    id: "cin_4",
+    title: "Pather Panchali Premiere",
+    description: "Satyajit Ray's debut masterpiece brought global international acclaim to parallel Indian cinema.",
+    year: 1955,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/d/dc/Satyajit_Ray_in_New_York_%28cropped%29.jpg"
+  },
+  {
+    id: "cin_5",
+    title: "Mother India Oscar Nomination",
+    description: "Mehboob Khan's epic became the first Indian film nominated for the Academy Award for Best International Feature.",
+    year: 1957,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Nargis_in_Mother_India_poster.jpg/500px-Nargis_in_Mother_India_poster.jpg"
+  },
+  {
+    id: "cin_6",
+    title: "Mughal-e-Azam Release",
+    description: "K. Asif's epic historical drama premiered, setting enduring standards for Indian cinematic spectacle.",
+    year: 1960,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Mughal-e-Azam.jpg/500px-Mughal-e-Azam.jpg"
+  },
+  {
+    id: "cin_7",
+    title: "Sholay Release",
+    description: "Ramesh Sippy's curry western blockbuster set all-time theatrical records across India.",
+    year: 1975,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Amitabh_Bachchan_2015.jpg/500px-Amitabh_Bachchan_2015.jpg"
+  },
+  {
+    id: "cin_8",
+    title: "Bhanu Athaiya Wins India's First Oscar",
+    description: "Bhanu Athaiya won the Academy Award for Best Costume Design for the movie Gandhi.",
+    year: 1983,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/2/2a/Bhanu_Athaiya_%28nee_Rajopadhye%29.jpg"
+  },
+  {
+    id: "cin_9",
+    title: "Satyajit Ray Honorary Academy Award",
+    description: "The Academy of Motion Picture Arts and Sciences conferred an Honorary Oscar on Satyajit Ray for lifetime achievement.",
+    year: 1992,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/d/dc/Satyajit_Ray_in_New_York_%28cropped%29.jpg"
+  },
+  {
+    id: "cin_10",
+    title: "Dilwale Dulhania Le Jayenge Premiere",
+    description: "The romantic landmark film premiered, going on to run continuously for over 1,000 weeks in theaters.",
+    year: 1995,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Shah_Rukh_Khan_graces_the_launch_of_the_new_version_of_20_years_of_DDLJ.jpg/500px-Shah_Rukh_Khan_graces_the_launch_of_the_new_version_of_20_years_of_DDLJ.jpg"
+  },
+  {
+    id: "cin_11",
+    title: "Lagaan Oscar Nomination",
+    description: "Ashutosh Gowariker's sports period drama achieved an Academy Award nomination for Best Foreign Film.",
+    year: 2001,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Aamir_Khan_2015.jpg/500px-Aamir_Khan_2015.jpg"
+  },
+  {
+    id: "cin_12",
+    title: "A.R. Rahman Double Oscar Victory",
+    description: "Composer A.R. Rahman won two Academy Awards (Original Score and Original Song) for Slumdog Millionaire.",
+    year: 2009,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/AR_Rahman_at_Premier_Futsal_Press_Meet_%28cropped%29.jpg/500px-AR_Rahman_at_Premier_Futsal_Press_Meet_%28cropped%29.jpg"
+  },
+  {
+    id: "cin_13",
+    title: "Baahubali: The Beginning Release",
+    description: "S.S. Rajamouli's epic pan-Indian fantasy film revolutionized Indian cinematic production scale globally.",
+    year: 2015,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Prabhas_at_Baahubali_Press_Meet.jpg/500px-Prabhas_at_Baahubali_Press_Meet.jpg"
+  },
+  {
+    id: "cin_14",
+    title: "Naatu Naatu Wins Academy Award",
+    description: "RRR's song won Best Original Song, becoming the first song from an Indian production to win an Oscar.",
+    year: 2023,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/S._S._Rajamouli_at_the_RRR_Press_Meet.jpg/500px-S._S._Rajamouli_at_the_RRR_Press_Meet.jpg"
+  },
+  {
+    id: "cin_15",
+    title: "The Elephant Whisperers Oscar Win",
+    description: "Kartiki Gonsalves and Guneet Monga won the Academy Award for Best Documentary Short Film.",
+    year: 2023,
+    category: "cinema",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Poster_Signed_Elephant_Whisperers_Mar23_A7R_04100.jpg/500px-Poster_Signed_Elephant_Whisperers_Mar23_A7R_04100.jpg"
+  },
+
+  // =========================================================================
+  // 4. CULTURE & HERITAGE (Sacred Temples, Festivals, Traditions, Caves)
+  // =========================================================================
+  {
+    id: "cul_1",
+    title: "Construction of Sanchi Stupa",
+    description: "Emperor Ashoka commissioned the Great Stupa at Sanchi, one of India's oldest stone Buddhist monuments.",
+    year: -250,
+    category: "culture",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Ashoka%27s_visit_to_the_Ramagrama_stupa_Sanchi_Stupa_1_Southern_gateway.jpg/500px-Ashoka%27s_visit_to_the_Ramagrama_stupa_Sanchi_Stupa_1_Southern_gateway.jpg"
+  },
+  {
+    id: "cul_2",
+    title: "Ajanta Rock-Cut Caves Creation",
+    description: "Ancient Buddhist rock-cut cave monuments featuring masterpiece mural paintings were carved in Maharashtra.",
+    year: 200,
+    category: "culture",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Ajanta_%2863%29.jpg/500px-Ajanta_%2863%29.jpg"
+  },
+  {
+    id: "cul_3",
+    title: "Kailasa Temple Carving at Ellora",
+    description: "Rashtrakuta King Krishna I carved the world's largest monolithic rock-cut temple from a single cliff face.",
+    year: 760,
+    category: "culture",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Ellora_cave16_001.jpg/500px-Ellora_cave16_001.jpg"
+  },
+  {
+    id: "cul_4",
+    title: "Brihadeeswarar Temple Consecration",
+    description: "Chola Emperor Raja Raja I completed the magnificent granite Dravidian temple in Thanjavur.",
+    year: 1010,
+    category: "culture",
+    image: "https://upload.wikimedia.org/wikipedia/commons/4/4e/Thanjavur_temple.jpg"
+  },
+  {
+    id: "cul_5",
+    title: "Sun Temple at Konark Built",
+    description: "King Narasimhadeva I of the Eastern Ganga Dynasty constructed the massive stone chariot Sun Temple in Odisha.",
+    year: 1250,
+    category: "culture",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Konarka_Temple.jpg/500px-Konarka_Temple.jpg"
+  },
+  {
+    id: "cul_6",
+    title: "Foundation of Sri Harmandir Sahib (Golden Temple)",
+    description: "Guru Arjan Dev Ji laid the foundation of the sacred central shrine of Sikhism in Amritsar.",
+    year: 1589,
+    category: "culture",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/The_Golden_Temple_of_Amrithsar_7.jpg/500px-The_Golden_Temple_of_Amrithsar_7.jpg"
+  },
+  {
+    id: "cul_7",
+    title: "Mysore Dasara Festivities Instituted",
+    description: "Raja Wodeyar I inaugurated the grand royal Vijayadashami celebration traditions in Mysore.",
+    year: 1610,
+    category: "culture",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Mysore_Palace_Dussera_%2829633564994%29.jpg/500px-Mysore_Palace_Dussera_%2829633564994%29.jpg"
+  },
+  {
+    id: "cul_8",
+    title: "Historical Kumbh Mela Documented",
+    description: "Chinese traveler Xuanzang recorded the historic mass spiritual river gathering at Prayagraj.",
+    year: 644,
+    category: "culture",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Third_Shahi_Snan_in_Hari_Ki_Pauri.jpg/500px-Third_Shahi_Snan_in_Hari_Ki_Pauri.jpg"
+  },
+  {
+    id: "cul_9",
+    title: "Public Durga Puja Pandals Origin",
+    description: "Twelve friends in Guptipara, Bengal organized the first community 'Barowari' public Durga Puja.",
+    year: 1790,
+    category: "culture",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/%E0%A6%AC%E0%A6%BE%E0%A6%97%E0%A6%AC%E0%A6%BE%E0%A6%9C%E0%A6%BE%E0%A6%B0_%E0%A6%B8%E0%A6%BE%E0%A6%B0%E0%A7%8D%E0%A6%AC%E0%A6%9C%E0%A6%A8%E0%A7%80%E0%A6%A8_%E0%A6%A6%E0%A7%81%E0%A6%B0%E0%A7%8D%E0%A6%97%E0%A7%8B%E0%A7%8E%E0%A6%B8%E0%A6%AC_%E0%A7%A8%E0%A7%A6%E0%A7%A7%E0%A7%AE.jpg/500px-%E0%A6%AC%E0%A6%BE%E0%A6%97%E0%A6%AC%E0%A6%BE%E0%A6%9C%E0%A6%BE%E0%A6%B0_%E0%A6%B8%E0%A6%BE%E0%A6%B0%E0%A7%8D%E0%A6%AC%E0%A6%9C%E0%A6%A8%E0%A7%80%E0%A6%A8_%E0%A6%A6%E0%A7%81%E0%A6%B0%E0%A7%8D%E0%A6%97%E0%A7%8B%E0%A7%8E%E0%A6%B8%E0%A6%AC_%E0%A7%A8%E0%A7%A6%E0%A7%A7%E0%A7%AE.jpg"
+  },
+  {
+    id: "cul_10",
+    title: "Natya Shastra Treatise Composed",
+    description: "Sage Bharata Muni compiled the foundational Sanskrit treatise on classical dance, music, and drama.",
+    year: -200,
+    category: "culture",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Shiva_as_the_Lord_of_Dance_LACMA_edit.jpg/500px-Shiva_as_the_Lord_of_Dance_LACMA_edit.jpg"
+  },
+
+  // =========================================================================
+  // 5. GENERAL TRIVIA (All-Around Cultural, Literary & Milestones)
+  // =========================================================================
   {
     id: "gen_1",
-    title: "First Telegraph Line Opened",
-    description: "The first experimental electric telegraph line began operating between Calcutta and Diamond Harbour.",
-    year: 1851,
-    category: "general"
+    title: "Establishment of the Indian Postal System",
+    description: "The formal postal network was introduced under Lord Dalhousie, laying the groundwork for India Post.",
+    year: 1854,
+    category: "general",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Mahuwal_Mahal_Post_Office_841240.webp/500px-Mahuwal_Mahal_Post_Office_841240.webp.png"
   },
   {
     id: "gen_2",
-    title: "First Passenger Train Runs",
-    description: "India's first passenger train traveled 34 km from Bombay's Bori Bunder to Thane.",
+    title: "First Indian Passenger Railway Train",
+    description: "India's first commercial train operated between Bombay (Bori Bunder) and Thane.",
     year: 1853,
-    category: "general"
+    category: "general",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Indian_Railways_WAP-7.jpg/500px-Indian_Railways_WAP-7.jpg"
   },
   {
     id: "gen_3",
-    title: "Tagore's Nobel Prize in Literature",
-    description: "Rabindranath Tagore became the first non-European Nobel laureate for his collection Gitanjali.",
+    title: "Rabindranath Tagore Nobel Prize in Literature",
+    description: "Tagore became the first non-European Nobel laureate following the publication of Gitanjali.",
     year: 1913,
-    category: "general"
+    category: "general",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/1926_Rabindrath_Tagore.jpg/500px-1926_Rabindrath_Tagore.jpg"
   },
   {
     id: "gen_4",
-    title: "JRD Tata's Commercial Flight",
-    description: "J.R.D. Tata piloted the inaugural mail flight from Karachi to Bombay, founding Tata Airlines (later Air India).",
-    year: 1932,
-    category: "general"
+    title: "Amartya Sen Nobel Prize in Economic Sciences",
+    description: "Economist Amartya Sen was awarded the Nobel Prize for his contributions to welfare economics.",
+    year: 1998,
+    category: "general",
+    image: "https://upload.wikimedia.org/wikipedia/commons/3/35/Amartya_Sen_20071128_cologne_cropped.jpg"
   },
   {
     id: "gen_5",
-    title: "Nationalisation of Banks",
-    description: "Prime Minister Indira Gandhi nationalised 14 major private commercial banks in a landmark reform.",
-    year: 1969,
-    category: "general"
+    title: "Operation Flood (White Revolution) Launched",
+    description: "Dr. Verghese Kurien launched the world's largest dairy development program, turning India into a milk surplus nation.",
+    year: 1970,
+    category: "general",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Dr._Verghese_Kurien.jpg/500px-Dr._Verghese_Kurien.jpg"
   },
   {
     id: "gen_6",
-    title: "Wildlife Protection Act Enacted",
-    description: "The Indian Parliament enacted this landmark law to protect wild animals, birds, and plants.",
-    year: 1972,
-    category: "general"
+    title: "Kolkata Metro Inception",
+    description: "India's first underground urban rapid transit metro system opened for public service in Kolkata.",
+    year: 1984,
+    category: "general",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/ICF_MEDHA_MR-416.jpg/500px-ICF_MEDHA_MR-416.jpg"
   },
   {
     id: "gen_7",
-    title: "Introduction of PIN Code System",
-    description: "The 6-digit Postal Index Number was introduced to streamline mail sorting across diverse regions.",
-    year: 1972,
-    category: "general"
+    title: "Statue of Unity Inauguration",
+    description: "The world's tallest statue (182 meters) depicting Sardar Vallabhbhai Patel was unveiled in Gujarat.",
+    year: 2018,
+    category: "general",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Statue_of_Unity.jpg/500px-Statue_of_Unity.jpg"
   },
   {
     id: "gen_8",
-    title: "Mother Teresa's Nobel Peace Prize",
-    description: "The founder of the Missionaries of Charity was awarded the peace prize for her work with the poor in Calcutta.",
-    year: 1979,
-    category: "general"
-  },
-  {
-    id: "gen_9",
-    title: "Doordarshan's National Color Telecast",
-    description: "National television broadcasts in color began, launching coinciding with the Asian Games.",
-    year: 1982,
-    category: "general"
-  },
-  {
-    id: "gen_10",
-    title: "First Metro Starts in Calcutta",
-    description: "India's first underground rapid transit system began running operations in Kolkata.",
-    year: 1984,
-    category: "general"
-  },
-  {
-    id: "gen_11",
-    title: "Amartya Sen wins Nobel Prize",
-    description: "Sen was awarded the Nobel Memorial Prize in Economic Sciences for his contributions to welfare economics.",
-    year: 1998,
-    category: "general"
-  },
-  {
-    id: "gen_12",
-    title: "Taj Mahal named a New Wonder",
-    description: "Following a worldwide poll, the Agra monument was declared one of the New Seven Wonders of the World.",
-    year: 2007,
-    category: "general"
-  },
-  {
-    id: "gen_13",
-    title: "Opening of Bandra-Worli Sea Link",
-    description: "The iconic cable-stayed bridge in Mumbai was opened to the public, easing city transit.",
-    year: 2009,
-    category: "general"
-  },
-  {
-    id: "gen_14",
-    title: "Mega Kumbh Mela in Prayagraj",
-    description: "The Hindu pilgrimage gathered a record estimated 120 million people, the largest human gathering in history.",
-    year: 2013,
-    category: "general"
+    title: "Kailash Satyarthi Nobel Peace Prize",
+    description: "Child rights activist Kailash Satyarthi was awarded the Nobel Peace Prize alongside Malala Yousafzai.",
+    year: 2014,
+    category: "general",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Kailash_Satyarthi%2C_August_2023.jpg/500px-Kailash_Satyarthi%2C_August_2023.jpg"
   }
 ];
