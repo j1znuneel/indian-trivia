@@ -525,18 +525,18 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
           {/* Timeline Scroll Buttons */}
           <button
             onClick={() => scrollTimeline("left")}
-            className="absolute left-2 z-20 p-3 border-2 border-black bg-[#FFF97A] hover:bg-[#FFFBA9] text-black shadow-brutal hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer hidden md:flex"
+            className="absolute left-4 z-20 p-3 border-2 border-black bg-[#FFF97A] hover:bg-[#FFFBA9] text-black shadow-brutal hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer hidden md:flex"
           >
             <ChevronLeft className="w-6 h-6 stroke-[2.5]" />
           </button>
 
-          {/* Scrolling timeline container */}
           <div
             ref={timelineContainerRef}
-            className={`w-full max-w-5xl overflow-x-auto no-scrollbar py-6 sm:py-8 flex items-center px-4 sm:px-12 snap-x ${
+            className={`w-full overflow-x-auto no-scrollbar py-8 flex items-center px-16 snap-x ${
               isAnimating ? "pointer-events-none" : ""
             }`}
           >
+            <div className="flex items-center justify-center mx-auto min-w-max">
             {/* Timeline Base Placeholder (for GSAP deal flight targeting) */}
             {!showBaseCard && (
               <div 
@@ -582,19 +582,15 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                       </div>
 
                       {/* Card wrapper */}
-                      <div 
-                        className={`
-                          relative rounded-2xl transition-all duration-300
-                          ${isCorrectFeedback ? "animate-flash-correct border-[3px] border-black" : ""}
-                          ${isIncorrectFeedback ? "animate-shake-brutal border-[3px] border-red-500 bg-[#FFD1D1]" : ""}
-                        `}
-                      >
+                      <div className="relative flex-shrink-0">
                         <TriviaCard 
                           card={card} 
                           revealed={true} 
                           skipInitialFlip={true} 
                           isIncorrect={gameState.incorrectCardIds.includes(card.id)}
                           isHoverDisabled={isAnimating}
+                          feedbackState={isCorrectFeedback ? "correct" : isIncorrectFeedback ? "incorrect" : null}
+                          className="mx-2 sm:mx-4"
                         />
                       </div>
                     </div>
@@ -631,11 +627,12 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                 </div>
               </>
             )}
+            </div>
           </div>
 
           <button
             onClick={() => scrollTimeline("right")}
-            className="absolute right-2 z-20 p-3 border-2 border-black bg-[#FFF97A] hover:bg-[#FFFBA9] text-black shadow-brutal hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer hidden md:flex"
+            className="absolute right-4 z-20 p-3 border-2 border-black bg-[#FFF97A] hover:bg-[#FFFBA9] text-black shadow-brutal hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all cursor-pointer hidden md:flex"
           >
             <ChevronRight className="w-6 h-6 stroke-[2.5]" />
           </button>
@@ -674,6 +671,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                       onDragStart={handleDragStart}
                       onDragEnd={handleDragEnd}
                       onClick={handleCardClick}
+                      className="mx-0"
                     />
                   </div>
                 ) : (
@@ -710,7 +708,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
             height: 240,
           }}
         >
-          <TriviaCard card={dealAnimation.card} revealed={dealAnimation.type === "timeline"} />
+          <TriviaCard card={dealAnimation.card} revealed={dealAnimation.type === "timeline"} className="mx-0" />
         </div>
       )}
 

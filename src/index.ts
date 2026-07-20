@@ -37,9 +37,9 @@ const server = serve({
         }));
 
         const shuffled = shuffle(sanitized);
-        const selected = shuffled.slice(0, 10);
 
-        return Response.json(selected);
+        // Shuffle and return all cards for the infinite game session (no slice(0, 10) constraint)
+        return Response.json(shuffled);
       } catch (err: any) {
         console.error(`[API Error]`, err);
         return new Response(JSON.stringify({ error: err.message }), {

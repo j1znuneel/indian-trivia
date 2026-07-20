@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { TriviaCard as CardType } from "../data/trivia";
-import { Landmark, Sparkles, Film, Rocket, History, Calendar, HelpCircle } from "lucide-react";
+import { Landmark, Sparkles, Film, Rocket, History, Calendar } from "lucide-react";
 
 interface TriviaCardProps {
   card: CardType;
@@ -14,6 +14,8 @@ interface TriviaCardProps {
   skipInitialFlip?: boolean;
   isIncorrect?: boolean;
   isHoverDisabled?: boolean;
+  feedbackState?: "correct" | "incorrect" | null;
+  className?: string;
 }
 
 const CATEGORY_THEMES = {
@@ -55,9 +57,11 @@ export function TriviaCard({
   onClick,
   skipInitialFlip = false,
   isIncorrect = false,
-  isHoverDisabled = false
+  isHoverDisabled = false,
+  feedbackState = null,
+  className
 }: TriviaCardProps) {
-  const theme = CATEGORY_THEMES[card.category];
+  const theme = CATEGORY_THEMES[card.category] || CATEGORY_THEMES.general;
   
   // 3D Flip States: starts face-down, flips face-up in mid-air
   const [isFlipped, setIsFlipped] = useState(
@@ -67,7 +71,6 @@ export function TriviaCard({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const canHoverFlip = revealed && !isCurrent && !isHoverDisabled;
-
   const isFaceAActive = (canHoverFlip && hoverFlipped) || !isFlipped;
   const isFaceBActive = !isFaceAActive;
 
@@ -98,7 +101,7 @@ export function TriviaCard({
   };
 
   const renderCardImage = (face: "A" | "B") => {
-    const heightClass = face === "A" ? "h-[100px]" : "h-[48px]";
+    const heightClass = face === "A" ? "h-[120px]" : "h-[75px]";
 
     if (imageError || !card.image) {
       return (
@@ -109,7 +112,6 @@ export function TriviaCard({
         </div>
       );
     }
-
     return (
       <div className={`relative w-full ${heightClass} border border-black bg-[#FFEBD6] flex-shrink-0 my-1 overflow-hidden select-none`}>
         {!imageLoaded && (
@@ -142,18 +144,25 @@ export function TriviaCard({
         draggable={isCurrent}
         onDragStart={isCurrent ? onDragStart : undefined}
         onDragEnd={isCurrent ? onDragEnd : undefined}
-        onClick={isCurrent ? onClick : undefined}
+        onClick={onClick}
         onMouseEnter={canHoverFlip ? () => setHoverFlipped(true) : undefined}
         onMouseLeave={canHoverFlip ? () => setHoverFlipped(false) : undefined}
         className={`
-          relative w-44 h-60 perspective-1000 select-none rounded-none cursor-pointer
-          ${isCurrent ? "cursor-grab active:cursor-grabbing hover:scale-[1.02]" : ""}
-          ${isDragging ? "opacity-30 scale-95" : "opacity-100"}
-          ${isCurrent && isSelected ? "ring-4 ring-black translate-x-[2px] translate-y-[2px]" : ""}
-          transition-all duration-200 ease-out
+          relative w-44 h-60 cursor-pointer select-none perspective-1000 flex-shrink-0
+          ${className !== undefined ? className : "mx-4"}
+          ${isDragging ? "opacity-40 scale-95" : "opacity-100 scale-100"}
+          ${isSelected ? "ring-4 ring-dashed ring-black ring-offset-4 animate-pulse" : ""}
+          ${feedbackState === "incorrect" ? "animate-shake-brutal" : ""}
+          transition-all duration-200
         `}
       >
-        {/* 3D Rotating Wrapper */}
+        {/* Feedback Lighting Overlay - Exact Card Dimensions */}
+        {feedbackState === "correct" && (
+          <div className="absolute inset-0 z-30 pointer-events-none rounded-none border-[4px] border-[#22c55e] bg-emerald-400/25 animate-flash-correct shadow-[0_0_20px_rgba(34,197,94,0.7)]" />
+        )}
+        {feedbackState === "incorrect" && (
+          <div className="absolute inset-0 z-30 pointer-events-none rounded-none border-[4px] border-[#ef4444] bg-red-500/25 shadow-[0_0_20px_rgba(239,68,68,0.7)]" />
+        )}
         <div 
           className="relative w-full h-full preserve-3d transition-transform duration-500 ease-out"
           style={{
@@ -164,33 +173,27 @@ export function TriviaCard({
         >
           {/* ================= FACE A: CLUE FACE (Front) ================= */}
           <div 
-            className={`absolute inset-0 backface-hidden border-[3px] border-black p-3 flex flex-col justify-between rounded-none bg-[#FFE885] ${
-              isFaceAActive ? "shadow-brutal" : ""
-            }`}
+            className="absolute inset-0 backface-hidden rounded-none"
           >
-            {/* Header Badge */}
-            <div className="w-full flex justify-between items-center mb-1">
-              <span className="text-[8px] font-black text-black uppercase tracking-wider bg-white border border-black px-1.5 py-0.2">
-                {card.category}
-              </span>
-              <div className="p-0.5 border border-black bg-white">
-                {theme.icon}
-              </div>
-            </div>
-
-            {/* Clue Content */}
-            <div className="flex-1 flex flex-col justify-center items-center py-1 text-center select-none overflow-hidden min-h-0">
-              <h4 className="text-xs font-black text-black uppercase leading-tight tracking-tight mb-1 px-1 line-clamp-3">
-                {card.title}
-              </h4>
+            <div className={`w-full h-full border-[3px] border-black p-3 flex flex-col justify-start rounded-none bg-[#FFE885] ${
+              isFaceAActive && !isCurrent ? "shadow-brutal" : ""
+            }`}>
+              {/* Image at the top, same padding top and x axes */}
               {renderCardImage("A")}
-            </div>
 
-            {/* Footer */}
-            <div className="w-full flex justify-center mt-1 border-t-[1.5px] border-black pt-1">
-              <span className="text-[9px] font-extrabold text-black uppercase tracking-wider bg-white border border-black px-2 py-0.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
-                {isCurrent ? "SORT ME!" : "BHARAT TRIVIA"}
-              </span>
+              {/* Title */}
+              <div className="flex-1 flex flex-col justify-center items-center py-2 text-center select-none overflow-hidden">
+                <h4 className="text-xs font-black text-black uppercase leading-snug tracking-tight line-clamp-3">
+                  {card.title}
+                </h4>
+              </div>
+
+              {/* Footer */}
+              <div className="w-full flex justify-center mt-auto border-t-[1.5px] border-black pt-1.5 flex-shrink-0">
+                <span className="text-[9px] font-extrabold text-black uppercase tracking-wider bg-white border border-black px-2 py-0.5 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)]">
+                  {isCurrent ? "SORT ME!" : "BHARAT TRIVIA"}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -199,35 +202,37 @@ export function TriviaCard({
             className="absolute inset-0 backface-hidden rotate-y-180 rounded-none"
           >
             {revealed ? (
-              /* Revealed Year Face (Year, Title, Description) */
-              <div className={`w-full h-full border-[3px] border-black p-3 flex flex-col justify-between rounded-none ${theme.bg} ${
-                isFaceBActive ? "shadow-brutal" : ""
+              /* Revealed Year Face (Image, Title, Description, Year) */
+              <div className={`w-full h-full border-[3px] border-black p-3 flex flex-col justify-start rounded-none ${theme.bg} ${
+                isFaceBActive && !isCurrent ? "shadow-brutal" : ""
               }`}>
-                {/* Year Value */}
-                <div className="flex-1 flex flex-col justify-center items-center text-center py-0.5 select-none overflow-hidden min-h-0">
-                  <div className={`border-[2px] border-black px-2 py-0.5 text-xs font-black text-black uppercase tracking-wide flex items-center gap-1 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] mb-1 ${
+                {/* Image at the top, same padding top and x axes */}
+                {renderCardImage("B")}
+
+                {/* Title */}
+                <h4 className="mt-2 text-[10px] font-black text-black uppercase leading-tight line-clamp-2 text-center select-none">
+                  {card.title}
+                </h4>
+
+                {/* Description */}
+                <p className="mt-1.5 text-[8px] font-semibold text-black/80 leading-snug line-clamp-3 text-center italic select-none">
+                  {card.description}
+                </p>
+
+                {/* Year Value at the bottom */}
+                <div className="mt-auto pt-2 flex justify-center select-none">
+                  <div className={`border-[2px] border-black px-2.5 py-0.5 text-[10px] font-black text-black uppercase tracking-wide flex items-center gap-1 shadow-[1.5px_1.5px_0px_rgba(0,0,0,1)] ${
                     isIncorrect ? "bg-[#FF6B6B]" : "bg-[#FFF97A]"
                   }`}>
                     <Calendar className="w-3 h-3 text-black stroke-[2.5]" />
                     {formatYear(card.year)}
                   </div>
-                  {renderCardImage("B")}
-                  <h4 className="mt-1 text-[10px] font-black text-black uppercase leading-tight px-1 line-clamp-2">
-                    {card.title}
-                  </h4>
-                </div>
-
-                {/* Description */}
-                <div className="w-full flex justify-center mt-1 border-t-[1.5px] border-black pt-1">
-                  <p className="text-[8px] font-semibold text-black leading-tight line-clamp-2 text-center italic">
-                    {card.description}
-                  </p>
                 </div>
               </div>
             ) : (
               /* Card Back Design (Draw Pile Style) */
               <div className={`w-full h-full border-[3px] border-black rounded-none bg-card-back flex flex-col justify-center items-center p-4 ${
-                isFaceBActive ? "shadow-brutal" : ""
+                isFaceBActive && !isCurrent ? "shadow-brutal" : ""
               }`}>
                 <div className="w-16 h-16 rounded-full border-[3px] border-black bg-[#FFF97A] flex items-center justify-center shadow-brutal-sm rotate-[-6deg] animate-pulse">
                   <span className="text-3xl font-black text-black">?</span>

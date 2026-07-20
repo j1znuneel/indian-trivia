@@ -71,6 +71,22 @@
   box-shadow: 9px 9px 0px 0px #000000;
 }
 
+/* Category Choice Cards Keypress effect */
+.category-card {
+  transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 6px 6px 0px 0px #000000;
+}
+
+.category-card:hover {
+  transform: translate(4px, 4px);
+  box-shadow: 2px 2px 0px 0px #000000;
+}
+
+.category-card:active {
+  transform: translate(6px, 6px);
+  box-shadow: none;
+}
+
 /* Timeline Dropzone Expansion */
 .dropzone-active {
   transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1.1);
@@ -91,8 +107,8 @@
 
 /* Pulse color flash for correct */
 @keyframes flash-correct {
-  0%, 100% { background-color: #86efac; } /* neon green */
-  50% { background-color: #22c55e; }
+  0%, 100% { background-color: rgba(134, 239, 172, 0.2); border-color: #22c55e; }
+  50% { background-color: rgba(34, 197, 94, 0.4); border-color: #15803d; }
 }
 
 .animate-flash-correct {
