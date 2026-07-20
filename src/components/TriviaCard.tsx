@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { TriviaCard as CardType } from "../data/trivia";
-import { Landmark, Trophy, Film, Rocket, History, Calendar, HelpCircle } from "lucide-react";
+import { Landmark, Sparkles, Film, Rocket, History, Calendar } from "lucide-react";
 
 interface TriviaCardProps {
   card: CardType;
@@ -22,11 +22,6 @@ const CATEGORY_THEMES = {
     iconBg: "bg-[#FFBE7A]",
     icon: <Landmark className="w-4 h-4 text-black" />
   },
-  sports: {
-    bg: "bg-[#E6F9FF]",
-    iconBg: "bg-[#7AE4FF]",
-    icon: <Trophy className="w-4 h-4 text-black" />
-  },
   cinema: {
     bg: "bg-[#F7EFFF]",
     iconBg: "bg-[#C87AFF]",
@@ -41,6 +36,11 @@ const CATEGORY_THEMES = {
     bg: "bg-[#FFE6EC]",
     iconBg: "bg-[#FF7A9B]",
     icon: <History className="w-4 h-4 text-black" />
+  },
+  culture: {
+    bg: "bg-[#FFFDE6]",
+    iconBg: "bg-[#FFE885]",
+    icon: <Sparkles className="w-4 h-4 text-black" />
   }
 };
 
@@ -57,7 +57,7 @@ export function TriviaCard({
   isIncorrect = false,
   isHoverDisabled = false
 }: TriviaCardProps) {
-  const theme = CATEGORY_THEMES[card.category];
+  const theme = CATEGORY_THEMES[card.category] || CATEGORY_THEMES.general;
   
   // 3D Flip States: starts face-down, flips face-up in mid-air
   const [isFlipped, setIsFlipped] = useState(
@@ -65,11 +65,10 @@ export function TriviaCard({
   );
   const [hoverFlipped, setHoverFlipped] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const canHoverFlip = revealed && !isCurrent && !isHoverDisabled;
   const isFaceAActive = (canHoverFlip && hoverFlipped) || !isFlipped;
   const isFaceBActive = !isFaceAActive;
-
-
 
   useEffect(() => {
     if (skipInitialFlip) {
@@ -86,6 +85,7 @@ export function TriviaCard({
 
   useEffect(() => {
     setImageLoaded(false);
+    setImageError(false);
     setHoverFlipped(false);
   }, [card.id]);
 
@@ -97,8 +97,17 @@ export function TriviaCard({
   };
 
   const renderCardImage = (face: "A" | "B") => {
-    if (!card.image) return null;
     const heightClass = face === "A" ? "h-[120px]" : "h-[75px]";
+
+    if (imageError || !card.image) {
+      return (
+        <div className={`relative w-full ${heightClass} border border-black ${theme.iconBg} flex-shrink-0 my-1 flex items-center justify-center select-none`}>
+          <div className="p-2 rounded-full border border-black bg-white shadow-brutal-sm">
+            {theme.icon}
+          </div>
+        </div>
+      );
+    }
     return (
       <div className={`relative w-full ${heightClass} border border-black bg-[#FFEBD6] flex-shrink-0 my-1 overflow-hidden select-none`}>
         {!imageLoaded && (
@@ -108,13 +117,16 @@ export function TriviaCard({
         )}
         <img
           src={card.image}
-          alt={card.title}
+          alt=""
+          aria-hidden="true"
+          referrerPolicy="no-referrer"
           ref={(el) => {
-            if (el && el.complete && !imageLoaded) {
+            if (el && el.complete && !imageLoaded && !imageError) {
               setTimeout(() => setImageLoaded(true), 0);
             }
           }}
           onLoad={() => setImageLoaded(true)}
+          onError={() => setImageError(true)}
           className={`w-full h-full object-cover transition-opacity duration-300 ${
             imageLoaded ? "opacity-100" : "opacity-0 absolute"
           }`}
@@ -123,25 +135,21 @@ export function TriviaCard({
     );
   };
 
-
-
   return (
       <div
         draggable={isCurrent}
         onDragStart={isCurrent ? onDragStart : undefined}
         onDragEnd={isCurrent ? onDragEnd : undefined}
-        onClick={isCurrent ? onClick : undefined}
+        onClick={onClick}
         onMouseEnter={canHoverFlip ? () => setHoverFlipped(true) : undefined}
         onMouseLeave={canHoverFlip ? () => setHoverFlipped(false) : undefined}
         className={`
-          relative w-44 h-60 perspective-1000 select-none rounded-none cursor-pointer
-          ${isCurrent ? "cursor-grab active:cursor-grabbing hover:scale-[1.02]" : ""}
-          ${isDragging ? "opacity-30 scale-95" : "opacity-100"}
-          ${isCurrent && isSelected ? "ring-4 ring-black translate-x-[2px] translate-y-[2px]" : ""}
-          transition-all duration-200 ease-out
+          w-44 h-60 cursor-pointer select-none perspective-1000 flex-shrink-0 mx-4
+          ${isDragging ? "opacity-40 scale-95" : "opacity-100 scale-100"}
+          ${isSelected ? "ring-4 ring-dashed ring-black ring-offset-4 animate-pulse" : ""}
+          transition-all duration-200
         `}
       >
-        {/* 3D Rotating Wrapper */}
         <div 
           className="relative w-full h-full preserve-3d transition-transform duration-500 ease-out"
           style={{

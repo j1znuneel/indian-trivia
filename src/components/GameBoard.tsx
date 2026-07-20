@@ -10,19 +10,19 @@ interface GameBoardProps {
 }
 
 const CATEGORY_NAMES: Record<Category, string> = {
-  history: "History & Politics",
-  sports: "Sports & Games",
+  history: "History",
   cinema: "Cinema & Arts",
   science: "Science & Technology",
-  general: "General & Culture"
+  general: "General",
+  culture: "Culture & Heritage"
 };
 
 const CATEGORY_HEADER_BG: Record<Category, string> = {
   history: "bg-[#FFBE7A]",
-  sports: "bg-[#7AE4FF]",
   cinema: "bg-[#C87AFF]",
   science: "bg-[#7AFF9B]",
-  general: "bg-[#FF7A9B]"
+  general: "bg-[#FF7A9B]",
+  culture: "bg-[#FFE885]"
 };
 
 export function GameBoard({ category, gameState }: GameBoardProps) {
@@ -476,50 +476,52 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
   };
 
   return (
-    <div ref={boardRef} className="relative w-full flex flex-col items-center justify-between min-h-[90vh] py-4 px-4 select-none">
+    <div ref={boardRef} className="relative w-full flex flex-col items-center justify-between min-h-[90vh] py-2 sm:py-4 px-2 sm:px-4 select-none">
       {/* Top Header Panel */}
-      <header className="w-full max-w-5xl flex items-center justify-between px-6 py-4 border-brutal-thick bg-white text-black shadow-brutal mb-10 rotate-[-0.5deg]">
-        <div className="flex items-center gap-4">
+      <header className="w-full max-w-5xl flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-4 p-2 sm:px-6 sm:py-4 border-brutal-thick bg-white text-black shadow-brutal mb-4 sm:mb-10 rotate-[-0.5deg]">
+        <div className="flex items-center gap-2 sm:gap-4">
           <button
             onClick={resetGame}
-            className="p-2 border-2 border-black bg-[#FF7A9B] hover:bg-[#FF9CB5] shadow-brutal-sm hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-brutal cursor-pointer active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+            className="p-1.5 sm:p-2 border-2 border-black bg-[#FF7A9B] hover:bg-[#FF9CB5] shadow-brutal-sm hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-brutal cursor-pointer active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
             title="Go to Home"
           >
-            <ArrowLeft className="w-5 h-5 text-black stroke-[2.5]" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-black stroke-[2.5]" />
           </button>
           <div>
-            <h2 className={`text-base font-black uppercase border-2 border-black px-2 py-0.5 shadow-[2px_2px_0px_rgba(0,0,0,1)] ${CATEGORY_HEADER_BG[category]}`}>
+            <h2 className={`text-xs sm:text-base font-black uppercase border-2 border-black px-2 py-0.5 shadow-[2px_2px_0px_rgba(0,0,0,1)] ${CATEGORY_HEADER_BG[category]}`}>
               {CATEGORY_NAMES[category]}
             </h2>
           </div>
         </div>
 
-        {/* Lives Box */}
-        <div 
-          className={`flex items-center gap-2 border-2 border-black bg-white px-3 py-1.5 shadow-[3px_3px_0px_rgba(0,0,0,1)] ${
-            shakeHearts ? "animate-shake-brutal bg-[#FF6B6B]" : ""
-          }`}
-        >
-          <span className="text-[10px] font-black uppercase mr-1">Lives:</span>
-          {renderHearts()}
-        </div>
-
-        {/* Scores */}
-        <div className="flex items-center gap-4">
-          <div className="text-right border-2 border-black bg-[#7AFF9B] px-3 py-1 shadow-brutal-sm">
-            <span className="block text-[8px] font-black uppercase text-black tracking-wide">Score</span>
-            <span className="text-lg font-black text-black">{score}</span>
+        <div className="flex items-center gap-2 sm:gap-4 ml-auto sm:ml-0">
+          {/* Lives Box */}
+          <div 
+            className={`flex items-center gap-1 sm:gap-2 border-2 border-black bg-white px-2 sm:px-3 py-1 sm:py-1.5 shadow-[2px_2px_0px_rgba(0,0,0,1)] ${
+              shakeHearts ? "animate-shake-brutal bg-[#FF6B6B]" : ""
+            }`}
+          >
+            <span className="text-[9px] sm:text-[10px] font-black uppercase mr-0.5 sm:mr-1">Lives:</span>
+            {renderHearts()}
           </div>
-          <div className="text-right border-2 border-black bg-[#FFF97A] px-3 py-1 shadow-brutal-sm">
-            <span className="block text-[8px] font-black uppercase text-black tracking-wide">Best</span>
-            <span className="text-lg font-black text-black">{highScores}</span>
+
+          {/* Scores */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="text-right border-2 border-black bg-[#7AFF9B] px-2 sm:px-3 py-0.5 sm:py-1 shadow-brutal-sm">
+              <span className="block text-[7px] sm:text-[8px] font-black uppercase text-black tracking-wide">Score</span>
+              <span className="text-sm sm:text-lg font-black text-black">{score}</span>
+            </div>
+            <div className="text-right border-2 border-black bg-[#FFF97A] px-2 sm:px-3 py-0.5 sm:py-1 shadow-brutal-sm">
+              <span className="block text-[7px] sm:text-[8px] font-black uppercase text-black tracking-wide">Best</span>
+              <span className="text-sm sm:text-lg font-black text-black">{highScores}</span>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Timeline Section */}
-      <main className="w-full flex flex-col items-center justify-center flex-1 my-4">
-        <div className="relative w-full flex items-center justify-center mb-16">
+      <main className="w-full flex flex-col items-center justify-center flex-1 my-2 sm:my-4">
+        <div className="relative w-full flex items-center justify-center mb-8 sm:mb-16">
           {/* Timeline Scroll Buttons */}
           <button
             onClick={() => scrollTimeline("left")}
@@ -528,7 +530,6 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
             <ChevronLeft className="w-6 h-6 stroke-[2.5]" />
           </button>
 
-          {/* Scrolling timeline container */}
           <div
             ref={timelineContainerRef}
             className={`w-full overflow-x-auto no-scrollbar py-8 flex items-center px-16 snap-x ${
@@ -561,21 +562,21 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                         onDrop={(e) => handleDrop(e, idx)}
                         onClick={() => handleDropzoneClick(idx)}
                         className={`
-                          dropzone-active h-60 flex flex-col items-center justify-center rounded-none border-[3px] border-dashed border-black
+                          dropzone-active h-60 flex flex-col items-center justify-center rounded-none border-[3px] border-dashed border-black transition-all duration-300 ease-out
                           ${hoveredDropzone === idx
-                            ? "w-44 bg-[#7AFF9B] border-solid shadow-brutal translate-x-[-3px] translate-y-[-3px] mx-4"
+                            ? "w-40 sm:w-44 bg-[#7AFF9B] border-solid shadow-brutal translate-x-[-3px] translate-y-[-3px] mx-2 sm:mx-4"
                             : isCardSelected
-                            ? "w-44 bg-[#FFF97A] border-solid shadow-brutal cursor-pointer mx-4 animate-pulse"
+                            ? "w-40 sm:w-44 bg-[#FFF97A] border-solid shadow-brutal cursor-pointer mx-2 sm:mx-4 animate-pulse"
                             : isDragging
-                            ? "w-20 bg-slate-100 border-black/40 mx-2"
-                            : "w-6 border-transparent mx-1"
+                            ? "w-16 sm:w-20 bg-slate-100 border-black/40 mx-1 sm:mx-2"
+                            : "w-4 sm:w-6 border-transparent mx-0.5 sm:mx-1"
                           }
                         `}
                       >
                         {(hoveredDropzone === idx || isCardSelected) && (
-                          <div className="flex flex-col items-center gap-2 text-black p-4 text-center pointer-events-none">
-                            <Plus className="w-8 h-8 stroke-[3]" />
-                            <span className="text-[10px] font-black tracking-tighter uppercase">PLACE CARD</span>
+                          <div className="flex flex-col items-center gap-2 text-black p-2 sm:p-4 text-center pointer-events-none">
+                            <Plus className="w-6 h-6 sm:w-8 sm:h-8 stroke-[3]" />
+                            <span className="text-[9px] sm:text-[10px] font-black tracking-tighter uppercase">PLACE CARD</span>
                           </div>
                         )}
                       </div>
@@ -609,21 +610,21 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                     onDrop={(e) => handleDrop(e, timeline.length)}
                     onClick={() => handleDropzoneClick(timeline.length)}
                     className={`
-                      dropzone-active h-60 flex flex-col items-center justify-center rounded-none border-[3px] border-dashed border-black
+                      dropzone-active h-60 flex flex-col items-center justify-center rounded-none border-[3px] border-dashed border-black transition-all duration-300 ease-out
                       ${hoveredDropzone === timeline.length
-                        ? "w-44 bg-[#7AFF9B] border-solid shadow-brutal translate-x-[-3px] translate-y-[-3px] mx-4"
+                        ? "w-40 sm:w-44 bg-[#7AFF9B] border-solid shadow-brutal translate-x-[-3px] translate-y-[-3px] mx-2 sm:mx-4"
                         : isCardSelected
-                        ? "w-44 bg-[#FFF97A] border-solid shadow-brutal cursor-pointer mx-4 snap-center animate-pulse"
+                        ? "w-40 sm:w-44 bg-[#FFF97A] border-solid shadow-brutal cursor-pointer mx-2 sm:mx-4 snap-center animate-pulse"
                         : isDragging
-                        ? "w-20 bg-slate-100 border-black/40 mx-2"
-                        : "w-6 border-transparent mx-1"
+                        ? "w-16 sm:w-20 bg-slate-100 border-black/40 mx-1 sm:mx-2"
+                        : "w-4 sm:w-6 border-transparent mx-0.5 sm:mx-1"
                       }
                     `}
                   >
                     {(hoveredDropzone === timeline.length || isCardSelected) && (
-                      <div className="flex flex-col items-center gap-2 text-black p-4 text-center pointer-events-none">
-                        <Plus className="w-8 h-8 stroke-[3]" />
-                        <span className="text-[10px] font-black tracking-tighter uppercase">PLACE CARD</span>
+                      <div className="flex flex-col items-center gap-2 text-black p-2 sm:p-4 text-center pointer-events-none">
+                        <Plus className="w-6 h-6 sm:w-8 sm:h-8 stroke-[3]" />
+                        <span className="text-[9px] sm:text-[10px] font-black tracking-tighter uppercase">PLACE CARD</span>
                       </div>
                     )}
                   </div>

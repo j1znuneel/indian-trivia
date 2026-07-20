@@ -26,62 +26,7 @@ The application is built as a single-repository React + TypeScript web app serve
 * **Engine:** Powered by Bun, running a lightweight HTTP server in `src/index.ts`.
 * **Role:** Serves as a secure proxy (`/api/wikidata`) to execute Wikidata SPARQL queries, bypassing client-side CORS restrictions, mapping data schemas, and resolving third-party assets.
 
----
-
-## 📡 Data Resolution Pipeline (Where & How Data is Queried)
-
-When a player selects a category, the server resolves cards using a multi-tiered fallback architecture:
-
-```
-                  Category Selected
-                         │
-                         ▼
-           ┌───────────────────────────┐
-           │ 1. Static Shard exists?   │── Yes (Fast Local File Load) ──> [ Serve Cards ]
-           └───────────────────────────┘
-                         │ No
-                         ▼
-           ┌───────────────────────────┐
-           │ 2. In-Memory Cache valid? │── Yes (Cached JSON Response) ──> [ Serve Cards ]
-           └───────────────────────────┘
-                         │ No
-                         ▼
-           ┌───────────────────────────┐
-           │ 3. Query Wikidata SPARQL  │── Yes (Fetch Live Wikidata API)
-           └───────────────────────────┘
-                         │
-                         ▼
-           ┌───────────────────────────┐
-           │ 4. Resolve Movie Posters  │ (If Category is Cinema/Movies)
-           │    via Wikipedia API      │
-           └───────────────────────────┘
-                         │
-                         ▼
-           ┌───────────────────────────┐
-           │ 5. Filter & Deduplicate   │──> [ Cache & Serve Shuffled Cards ]
-           └───────────────────────────┘
-```
-
-### 1. Static Shards (Primary)
-The server first checks if a static JSON shard is available at `./src/data/shards/<category>.json`. Sharding provides near-instant loading times and offline development capabilities.
-
-### 2. Live Wikidata SPARQL Queries (Secondary)
-If no static shard exists, the server queries the official **Wikidata Query Service** (`https://query.wikidata.org/sparql`) with custom SPARQL queries. 
-* To restrict events strictly to India, queries leverage properties like `wdt:P17 wd:Q668` (Country: India) or `wdt:P495 wd:Q668` (Country of Origin: India).
-* Queries are capped to retrieve up to **150 unique results** per category to support long-lasting sessions.
-* Wikidata queries are cached in-memory (`CACHE_TTL` = 10 minutes) to respect Wikimedia rate limits.
-
-### 3. Wikipedia PageImages API (Fair-Use Poster Resolution)
-In the **Cinema & Arts** category, standard Wikidata image properties (`wdt:P18`) are missing for most Indian films due to copyright rules on Wikimedia Commons. 
-* To display the actual **movie posters**, the server queries Wikidata for the film's English Wikipedia article link (`?articleTitle`).
-* The server then queries Wikipedia's public **PageImages API** in parallel:
-  `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=thumbnail&pithumbsize=400&titles=<articleTitle>&origin=*`
-* Because English Wikipedia hosts movie posters under fair-use guidelines, this API returns the actual movie poster for almost 100% of notable films.
-
-### 4. Client-Side Offline Curation Fallback (Tertiary)
-If the server is offline or the Wikidata queries fail, the client (`useGameState.ts`) catches the error and falls back to a locally curated dataset of ~100 high-quality historical events stored in `src/data/trivia.ts`.
-
----
+--
 
 ## 🛠️ Performance & UX Optimizations
 
