@@ -14,6 +14,8 @@ interface TriviaCardProps {
   skipInitialFlip?: boolean;
   isIncorrect?: boolean;
   isHoverDisabled?: boolean;
+  feedbackState?: "correct" | "incorrect" | null;
+  className?: string;
 }
 
 const CATEGORY_THEMES = {
@@ -55,7 +57,9 @@ export function TriviaCard({
   onClick,
   skipInitialFlip = false,
   isIncorrect = false,
-  isHoverDisabled = false
+  isHoverDisabled = false,
+  feedbackState = null,
+  className
 }: TriviaCardProps) {
   const theme = CATEGORY_THEMES[card.category] || CATEGORY_THEMES.general;
   
@@ -144,12 +148,21 @@ export function TriviaCard({
         onMouseEnter={canHoverFlip ? () => setHoverFlipped(true) : undefined}
         onMouseLeave={canHoverFlip ? () => setHoverFlipped(false) : undefined}
         className={`
-          w-44 h-60 cursor-pointer select-none perspective-1000 flex-shrink-0 mx-4
+          relative w-44 h-60 cursor-pointer select-none perspective-1000 flex-shrink-0
+          ${className !== undefined ? className : "mx-4"}
           ${isDragging ? "opacity-40 scale-95" : "opacity-100 scale-100"}
           ${isSelected ? "ring-4 ring-dashed ring-black ring-offset-4 animate-pulse" : ""}
+          ${feedbackState === "incorrect" ? "animate-shake-brutal" : ""}
           transition-all duration-200
         `}
       >
+        {/* Feedback Lighting Overlay - Exact Card Dimensions */}
+        {feedbackState === "correct" && (
+          <div className="absolute inset-0 z-30 pointer-events-none rounded-none border-[4px] border-[#22c55e] bg-emerald-400/25 animate-flash-correct shadow-[0_0_20px_rgba(34,197,94,0.7)]" />
+        )}
+        {feedbackState === "incorrect" && (
+          <div className="absolute inset-0 z-30 pointer-events-none rounded-none border-[4px] border-[#ef4444] bg-red-500/25 shadow-[0_0_20px_rgba(239,68,68,0.7)]" />
+        )}
         <div 
           className="relative w-full h-full preserve-3d transition-transform duration-500 ease-out"
           style={{

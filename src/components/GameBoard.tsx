@@ -582,19 +582,15 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                       </div>
 
                       {/* Card wrapper */}
-                      <div 
-                        className={`
-                          relative rounded-2xl transition-all duration-300
-                          ${isCorrectFeedback ? "animate-flash-correct border-[3px] border-black" : ""}
-                          ${isIncorrectFeedback ? "animate-shake-brutal border-[3px] border-red-500 bg-[#FFD1D1]" : ""}
-                        `}
-                      >
+                      <div className="relative flex-shrink-0">
                         <TriviaCard 
                           card={card} 
                           revealed={true} 
                           skipInitialFlip={true} 
                           isIncorrect={gameState.incorrectCardIds.includes(card.id)}
                           isHoverDisabled={isAnimating}
+                          feedbackState={isCorrectFeedback ? "correct" : isIncorrectFeedback ? "incorrect" : null}
+                          className="mx-2 sm:mx-4"
                         />
                       </div>
                     </div>
@@ -675,6 +671,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
                       onDragStart={handleDragStart}
                       onDragEnd={handleDragEnd}
                       onClick={handleCardClick}
+                      className="mx-0"
                     />
                   </div>
                 ) : (
@@ -711,7 +708,7 @@ export function GameBoard({ category, gameState }: GameBoardProps) {
             height: 240,
           }}
         >
-          <TriviaCard card={dealAnimation.card} revealed={dealAnimation.type === "timeline"} />
+          <TriviaCard card={dealAnimation.card} revealed={dealAnimation.type === "timeline"} className="mx-0" />
         </div>
       )}
 

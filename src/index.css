@@ -107,8 +107,8 @@
 
 /* Pulse color flash for correct */
 @keyframes flash-correct {
-  0%, 100% { background-color: #86efac; } /* neon green */
-  50% { background-color: #22c55e; }
+  0%, 100% { background-color: rgba(134, 239, 172, 0.2); border-color: #22c55e; }
+  50% { background-color: rgba(34, 197, 94, 0.4); border-color: #15803d; }
 }
 
 .animate-flash-correct {
